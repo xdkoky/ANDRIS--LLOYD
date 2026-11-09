@@ -40,13 +40,23 @@ tr.k-move td{color:#333}
 .warn{color:var(--red);font-weight:700}
 .small{font-size:8pt;color:var(--muted)}
 /* idősáv */
-.tl{margin:3mm 0 1mm}
-.tl .row{display:flex;height:9mm;border:1px solid var(--ink)}
-.tl .seg{height:100%;border-right:1px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:6.5pt;overflow:hidden;white-space:nowrap}
-.tl .ticks{position:relative;height:5mm;font-family:"Courier Prime",monospace;font-size:7pt}
-.tl .ticks span{position:absolute;transform:translateX(-50%);top:1mm}
-.tl .ticks span:first-child{transform:none}
-.tl .ticks span:last-child{transform:translateX(-100%)}
+.tl{margin:3mm 0 1mm;display:grid;gap:3mm}
+.tl .half{display:grid;grid-template-columns:17mm 1fr;gap:2mm;align-items:end}
+.tl .hname{font-family:"Courier Prime",monospace;font-size:7.5pt;font-weight:700;padding-bottom:6.5mm}
+.tl .labs{position:relative;height:8.5mm}
+.tl .labs span{position:absolute;transform:translateX(-50%);font-size:7.2pt;font-weight:700;white-space:nowrap;line-height:1}
+.tl .labs span.lo{top:4.4mm}
+.tl .labs span.hi{top:0}
+.tl .labs span::after{content:"";position:absolute;left:50%;top:100%;border-left:1px solid var(--ink)}
+.tl .labs span.hi::after{height:5.6mm}
+.tl .labs span.lo::after{height:1.4mm}
+.tl .bar{display:flex;height:7mm;border:1px solid var(--ink)}
+.tl .seg{height:100%;border-right:1px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:7pt;font-weight:600;overflow:hidden;white-space:nowrap}
+.tl .seg:last-child{border-right:0}
+.tl .ticks{position:relative;height:4mm;font-family:"Courier Prime",monospace;font-size:7pt}
+.tl .ticks span{position:absolute;transform:translateX(-50%);top:.8mm}
+.tl .ticks span.first{transform:none}
+.tl .ticks span.last{transform:translateX(-100%)}
 .legend{display:flex;flex-wrap:wrap;gap:3mm 5mm;font-size:7.8pt;margin-top:1mm}
 .legend i{display:inline-block;width:3.2mm;height:3.2mm;vertical-align:-0.5mm;margin-right:1.2mm}
 .check{display:flex;flex-wrap:wrap;gap:1.5mm 4mm;font-family:"Courier Prime",monospace;font-size:8.3pt;margin-top:2mm}
@@ -77,8 +87,7 @@ li{margin:0.6mm 0}
 
 <h2>Idősáv</h2>
 <div class="tl">
-  <div class="row" id="tlrow"></div>
-  <div class="ticks" id="tlticks"></div>
+  <div id="tlhalves"></div>
   <div class="legend">
     <span><i style="background:var(--prep)"></i>Előkészület</span>
     <span><i style="background:var(--shoot)"></i>Forgatás</span>
@@ -262,9 +271,23 @@ const sumBy=k=>R.filter(r=>r[2]===k).reduce((a,r)=>a+m(r[1])-m(r[0]),0);
 const shots=R.filter(r=>r[2]==="shoot").map(r=>r[3]).join(" ").match(/\d\/\d[A-E]?/g)||[];
 document.getElementById("rows").innerHTML=R.map(r=>`<tr class="k-${r[2]}"><td class="t">${r[0]}–${r[1]}</td><td class="task">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="d">${m(r[1])-m(r[0])}′</td></tr>`).join("");
 const COL={prep:"var(--prep)",shoot:"var(--shoot)",move:"var(--move)",lunch:"var(--lunch)",res:"var(--res)",wrap:"var(--wrap)"};
-document.getElementById("tlrow").innerHTML=R.map(r=>{const d=m(r[1])-m(r[0]);const lab=r[2]==="lunch"?"EBÉD":r[2]==="shoot"&&d>=15?r[3].replace(/<[^>]+>/g,"").replace(/^\d\. jel\. – /,"").replace(/ ⚠.*/,""):"";return`<div class="seg" style="width:${d/SPAN*100}%;background:${COL[r[2]]}">${lab}</div>`}).join("");
-const ticks=[[START,"8:30"]];for(let t=m("09:00");t<=END;t+=60)ticks.push([t,`${t/60}:00`]);ticks.push([END,"17:45"]);
-document.getElementById("tlticks").innerHTML=ticks.map(([t,l])=>`<span style="left:${(t-START)/SPAN*100}%">${l}</span>`).join("");
+const short=r=>{if(r[2]==="res")return"kieg.";let t=r[3].replace(/<[^>]+>/g,"").replace(/^\d\. jel\. – /,"").replace(/ ⚠.*/,"").trim();return t.replace(/(\d\/\d)([A-E]) \+ \1([A-E])/,"$1$2+$3").replace(/ \+ /g,"+")};
+const INLINE={prep:"előkészület",lunch:"EBÉD",wrap:"zárás"};
+function half(name,from,to){
+  const span=to-from, rs=R.filter(r=>m(r[0])>=from&&m(r[1])<=to);
+  let bar="",labs="",i=0;
+  for(const r of rs){
+    const st=m(r[0]),d=m(r[1])-st,pct=x=>(x-from)/span*100;
+    bar+=`<div class="seg" style="width:${d/span*100}%;background:${COL[r[2]]}">${INLINE[r[2]]&&d>=(r[2]==="prep"?45:15)?INLINE[r[2]]:""}</div>`;
+    if(r[2]==="shoot"||r[2]==="res"){labs+=`<span class="${i%2?"lo":"hi"}" style="left:${pct(st+d/2)}%">${short(r)}</span>`;i++}
+  }
+  const tk=[];for(let t=Math.ceil(from/30)*30;t<=to;t+=30)if(t===from||t===to||(t-from>=20&&to-t>=20))tk.push(t);
+  if(tk[0]!==from)tk.unshift(from); if(tk[tk.length-1]!==to)tk.push(to);
+  const fmt=t=>`${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`;
+  const ticks=tk.map((t,j)=>`<span class="${j===0?"first":j===tk.length-1?"last":""}" style="left:${(t-from)/span*100}%">${fmt(t)}</span>`).join("");
+  return`<div class="half"><div class="hname">${name}</div><div><div class="labs">${labs}</div><div class="bar">${bar}</div><div class="ticks">${ticks}</div></div></div>`;
+}
+document.getElementById("tlhalves").innerHTML=half("Délelőtt",START,m("12:35"))+half("Délután",m("12:35"),END);
 for(const k of ["prep","shoot","res","move","lunch","wrap"])document.getElementById("s-"+k).textContent=sumBy(k)+"′";
 document.getElementById("total").textContent=`${total}′ = ${Math.floor(total/60)} óra ${total%60} perc`;
 document.getElementById("checktxt").innerHTML=ok&&total===555
