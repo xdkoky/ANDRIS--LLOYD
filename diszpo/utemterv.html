@@ -115,7 +115,7 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
   <thead><tr><th>Idő</th><th>Jel. / shot</th><th>Beállítás</th><th>Megjegyzés</th><th>Perc</th></tr></thead>
   <tbody id="rows"></tbody>
 </table>
-<div class="check" style="margin-top:2mm"><span>10:50 1/1</span><span>12:05 konyha</span><span>13:05 2/2</span><span>14:35 2/6</span><span>16:05 2/5</span><span>17:15 este</span></div>
+<div class="check" style="margin-top:2mm"><span>10:50 1/1</span><span>12:05 konyha</span><span>13:05 2/2</span><span>14:45 2/6</span><span>16:15 2/5</span><span>17:25 este</span></div>
 
 <h2>Fénybeállítások (vilkó)</h2>
 <table>
@@ -159,7 +159,7 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
 <div class="avoid">
 <h2>Ha csúszunk</h2>
 <ol class="notes">
-  <li>Tartalékok felhasználása (2 × 15′).</li>
+  <li>Tartalékok felhasználása (15′ + 5′).</li>
   <li>Kiegészítő jelenet kimarad (–10′).</li>
   <li>2/1E B kamerával a 2/1B alatt (–15′).</li>
   <li>2/5 B kamerával a 2/4 alatt (–20′).</li>
@@ -196,31 +196,32 @@ const R=[
  ["12:05","12:20","move","Átállás nappaliba","Vilkó 2-2","Ebéd után azonnal 2/2","N1"],
  ["12:20","12:50","lunch","EBÉD","–","–"],
  ["12:50","13:05","shoot","2/2","Wide, 25 mm, sticks","Teljes jelenet egyben, max. 3 teljes take","N1"],
- ["13:05","13:15","shoot","Kiegészítő","Kézi, ugyanaz a fény","Bicepsz, nyújtás. Csúszásnál kimarad","N1"],
- ["13:15","13:20","move","Átállás","50 mm, low angle, oldalról","","N1"],
- ["13:20","13:35","shoot","2/1A","MCU, 50 mm, sticks","","N1"],
- ["13:35","13:45","move","Átállás","High angle, 35 mm (50)","Riser / overhead","N1"],
- ["13:45","14:00","shoot","2/1B","Medium, 35 mm (50)","Fekvő","N1"],
- ["14:00","14:05","move","Optikacsere","75 mm","","N1"],
- ["14:05","14:15","shoot","2/1E","ECU, 75 mm","Utolsó push","N1"],
- ["14:15","14:25","move","Átállás","Magic arm a rúdon, 25 mm","","N1"],
- ["14:25","14:35","shoot","2/6","Bench bar POV, 25 mm","Rúd felől a Fiúra","N1"],
- ["14:35","14:50","move","Átállás","Vilkó 2-1C: +1 PavoTube, prakti lámpa","","N2"],
- ["14:50","15:05","shoot","2/1C","Medium, 35 mm (50)","Felülő","N2"],
- ["15:05","15:20","move","Átállás","2,4 m sín, A + B kamera, 35 mm","","N2"],
- ["15:20","15:45","shoot","2/4 <span class='warn'>Ultra High</span>","MCU → Medium, dolly","Felülés, ölelés, visszafekvés","N2"],
- ["15:45","15:55","move","Átállás","Ablak felől, 50 mm (75)","","N2"],
- ["15:55","16:05","shoot","2/5","ECU inzert","Nagyi arca ölelésnél","N2"],
- ["16:05","16:20","res","Tartalék","–",""],
- ["16:20","16:30","move","Átállás","Vilkó 2-3A: prakti le, PavoTube át, frost, net","","N3"],
- ["16:30","16:45","shoot","2/3A","CU, 35/50 mm, kézi, alulról","","N3"],
- ["16:45","16:50","move","Optikacsere","75 mm","","N3"],
- ["16:50","17:00","shoot","2/3B","ECU, 75 mm, kézi, alulról","Végső reakció","N3"],
- ["17:00","17:15","move","Átállás estére","Vilkó 3-1","Nagy lámpák ki, 6 PavoTube, LiteMat, Aputure, prakti, TV","E"],
- ["17:15","17:30","shoot","3/1","CU, 50 mm (30), sticks","TV-t nézi","E"],
- ["17:30","17:35","move","Átállás","Vilkó 3-2","Konyhai fények bontása közben","E"],
- ["17:35","17:45","shoot","3/2","CU, 50 mm (30), sticks","Végső reakció","E"],
- ["17:45","18:00","res","Tartalék","–",""]
+ ["13:05","13:15","move","Átállás","Kézi kamera","","N1"],
+ ["13:15","13:25","shoot","Kiegészítő","Kézi, ugyanaz a fény","Bicepsz, nyújtás. Csúszásnál kimarad","N1"],
+ ["13:25","13:30","move","Átállás","50 mm, low angle, oldalról","","N1"],
+ ["13:30","13:45","shoot","2/1A","MCU, 50 mm, sticks","","N1"],
+ ["13:45","13:55","move","Átállás","High angle, 35 mm (50)","Riser / overhead","N1"],
+ ["13:55","14:10","shoot","2/1B","Medium, 35 mm (50)","Fekvő","N1"],
+ ["14:10","14:15","move","Optikacsere","75 mm","","N1"],
+ ["14:15","14:25","shoot","2/1E","ECU, 75 mm","Utolsó push","N1"],
+ ["14:25","14:35","move","Átállás","Magic arm a rúdon, 25 mm","","N1"],
+ ["14:35","14:45","shoot","2/6","Bench bar POV, 25 mm","Rúd felől a Fiúra","N1"],
+ ["14:45","15:00","move","Átállás","Vilkó 2-1C: +1 PavoTube, prakti lámpa","","N2"],
+ ["15:00","15:15","shoot","2/1C","Medium, 35 mm (50)","Felülő","N2"],
+ ["15:15","15:30","move","Átállás","2,4 m sín, A + B kamera, 35 mm","","N2"],
+ ["15:30","15:55","shoot","2/4 <span class='warn'>Ultra High</span>","MCU → Medium, dolly","Felülés, ölelés, visszafekvés","N2"],
+ ["15:55","16:05","move","Átállás","Ablak felől, 50 mm (75)","","N2"],
+ ["16:05","16:15","shoot","2/5","ECU inzert","Nagyi arca ölelésnél","N2"],
+ ["16:15","16:30","res","Tartalék","–",""],
+ ["16:30","16:40","move","Átállás","Vilkó 2-3A: prakti le, PavoTube át, frost, net","","N3"],
+ ["16:40","16:55","shoot","2/3A","CU, 35/50 mm, kézi, alulról","","N3"],
+ ["16:55","17:00","move","Optikacsere","75 mm","","N3"],
+ ["17:00","17:10","shoot","2/3B","ECU, 75 mm, kézi, alulról","Végső reakció","N3"],
+ ["17:10","17:25","move","Átállás estére","Vilkó 3-1","Nagy lámpák ki, 6 PavoTube, LiteMat, Aputure, prakti, TV","E"],
+ ["17:25","17:40","shoot","3/1","CU, 50 mm (30), sticks","TV-t nézi","E"],
+ ["17:40","17:45","move","Átállás","Vilkó 3-2","Konyhai fények bontása közben","E"],
+ ["17:45","17:55","shoot","3/2","CU, 50 mm (30), sticks","Végső reakció","E"],
+ ["17:55","18:00","res","Tartalék","–",""]
 ];
 const GROUPS=[["K1","Konyha, Fiú felől"],["K2","Konyha, ellenirány"],["N1","Nappali alapfény"],["N2","Nappali + prakti lámpa"],["N3","Nappali, Nagyi alulról"],["E","Nappali este"]];
 const m=t=>{const[h,mm]=t.split(":").map(Number);return h*60+mm};

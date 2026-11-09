@@ -169,7 +169,7 @@ blocks = [
         "A 2/4 sínje lerakható a 2/1C alatt, ha nem látszik.",
         "Konyhai fények bontása az esti jelenet alatt."]),
     ("Ha csúszunk", [
-        "1. Tartalékok felhasználása (2 × 15′).",
+        "1. Tartalékok felhasználása (15′ + 5′).",
         "2. Kiegészítő jelenet kimarad (–10′).",
         "3. 2/1E B kamerával a 2/1B alatt (–15′).",
         "4. 2/5 B kamerával a 2/4 alatt (–20′).",
