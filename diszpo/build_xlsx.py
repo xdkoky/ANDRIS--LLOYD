@@ -62,13 +62,13 @@ ws["B3"] = mins(R[0][0]) / 1440; ws["B3"].number_format = TIME
 ws["B4"] = mins(R[-1][1]) / 1440; ws["B4"].number_format = TIME
 for c in ("B3", "B4"):
     ws[c].fill = PatternFill("solid", fgColor="FFF2CC")
-ws["D3"] = "Sárga cella: átírható. Az időrendben csak a Perc oszlopot írd át,"
+ws["D3"] = "Csak a sárga cellákat írd át. Az időrendben a Rászánt idő oszlopot,"
 ws["D4"] = "a Kezdés és a Vég magától számolódik. Új sornál másold le a fölötte lévő sor képleteit."
 for c in ("D3", "D4"):
     ws[c].font = Font(italic=True, color="666666")
 HR = 8
-header(ws, HR, ["Kezdés", "Vég", "Perc", "Típus", "Jel. / shot", "Beállítás", "Megjegyzés", "Fény"],
-       [15, 9, 7, 13, 18, 34, 52, 8])
+header(ws, HR, ["Kezdés", "Vég", "Rászánt idő (perc)", "Típus", "Jel. / shot", "Beállítás", "Megjegyzés", "Fény"],
+       [15, 9, 11, 13, 18, 34, 52, 8])
 first = HR + 1
 for i, r in enumerate(R):
     row = first + i
@@ -83,6 +83,8 @@ for i, r in enumerate(R):
     for col in range(1, 9):
         c = ws.cell(row=row, column=col)
         c.border = BOX; c.alignment = WRAP
+    pc = ws.cell(row=row, column=3)
+    pc.fill = PatternFill("solid", fgColor="FFF2CC"); pc.font = BOLD; pc.alignment = Alignment(horizontal="center", vertical="top")
     ws.cell(row=row, column=1).number_format = TIME
     ws.cell(row=row, column=2).number_format = TIME
     if r[2] in ("shoot", "pres", "lunch"):
@@ -102,7 +104,7 @@ ws.conditional_formatting.add("B6", FormulaRule(formula=["$B$6>0"], font=Font(bo
 dv = DataValidation(type="list", formula1='"' + ",".join(TYPES.values()) + '"', allow_blank=True)
 ws.add_data_validation(dv); dv.add(f"D{first}:D{last+40}")
 for name, color in FILL.items():
-    ws.conditional_formatting.add(f"A{first}:H{last+40}",
+    ws.conditional_formatting.add(f"A{first}:B{last+40} D{first}:H{last+40}",
         FormulaRule(formula=[f'$D{first}="{name}"'], fill=PatternFill("solid", fgColor=color)))
 ws.freeze_panes = f"A{first}"
 ws.page_setup.orientation = "landscape"; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 0
@@ -194,4 +196,9 @@ for title, items in blocks:
 
 wb.calculation.fullCalcOnLoad = True
 wb.save(OUT)
+import shutil, tempfile
+tmp = tempfile.mkdtemp()
+subprocess.run(["soffice", "--headless", "--calc", "--convert-to", "xlsx:Calc MS Excel 2007 XML", "--outdir", tmp, OUT],
+               check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+shutil.move(os.path.join(tmp, os.path.basename(OUT)), OUT)
 print("kész:", OUT)
