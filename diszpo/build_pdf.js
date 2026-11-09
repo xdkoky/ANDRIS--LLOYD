@@ -1,6 +1,7 @@
 // Nyomtatható PDF-ek készítése: node diszpo/build_pdf.js
 // - Kapaszkodni_diszpo_2026-11-12.pdf   (nyomtathato.html; az INFO objektumban tölthető ki)
 // - Kapaszkodni_shotlist.pdf            (shotlist_nyomtathato.html)
+// - Kapaszkodni_utemterv_2026-11-12.pdf (utemterv.html)
 // - Kapaszkodni_forgatokonyv.pdf        (forgatokonyv_nyomtathato.html)
 // A shotlist és a szkript adatai az index.html-ből jönnek, így egy helyen kell javítani őket.
 const {chromium}=require('playwright');
@@ -14,6 +15,7 @@ const foot=(left,size=7)=>`<div style="font-family:Courier New,monospace;font-si
 const JOBS=[
   {html:'nyomtathato.html',out:'Kapaszkodni_diszpo_2026-11-12.pdf',footer:foot('KAPASZKODNI · napi diszpó · 2026.11.12. · kérdés esetén: 2. asszisztens (Balázs)')},
   {html:'shotlist_nyomtathato.html',out:'Kapaszkodni_shotlist.pdf',render:true,footer:foot('KAPASZKODNI · shotlist · 2026.11.12.')},
+  {html:'utemterv.html',out:'Kapaszkodni_utemterv_2026-11-12.pdf',footer:foot('KAPASZKODNI · napi ütemterv · TERVEZET · 2026.11.12.')},
   // A forgatókönyv címlapja külön készül, hogy ne kapjon oldalszámot; utána pdfunite fűzi össze.
   {html:'forgatokonyv_nyomtathato.html',out:'_cim.pdf',render:true,mode:'only-title',header:'<span></span>',footer:'<span></span>'},
   {html:'forgatokonyv_nyomtathato.html',out:'_torzs.pdf',render:true,mode:'only-body',
