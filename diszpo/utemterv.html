@@ -5,10 +5,10 @@
 <title>Kapaszkodni – napi ütemterv (tervezet)</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&display=swap">
 <style>
-/* A4 álló ütemterv-tervezet a rendezőnek: idősáv-áttekintés, részletes táblázat, beállítások, javaslatok, nyitott kérdések. */
+/* A4 napi ütemterv: idősáv, időrend, beállítások, megjegyzések. */
 @page{size:A4;margin:11mm 11mm 13mm}
 :root{--ink:#111;--muted:#555;--line:#999;--bar:#d6d6d6;--soft:#efefef;
-  --prep:#9a9a9a;--shoot:#2f6f4f;--move:#d9a441;--lunch:#4a6fa5;--res:#b6b6b6;--wrap:#6b6b6b;--red:#b3261e}
+  --prep:#9a9a9a;--shoot:#2f6f4f;--move:#d9a441;--lunch:#4a6fa5;--res:#b6b6b6;--pres:#7a5c99;--wrap:#6b6b6b;--red:#b3261e}
 *{box-sizing:border-box}
 html,body{margin:0;background:#fff;color:var(--ink)}
 body{font-family:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;font-size:9pt;line-height:1.32}
@@ -71,18 +71,30 @@ li{margin:0.6mm 0}
 </style>
 </head>
 <body>
+<style>
+tr.k-pres td:first-child{box-shadow:inset 4px 0 0 var(--pres)}
+tr.k-pres td{font-weight:700}
+tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
+.info{display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid var(--ink);margin-top:3mm;font-family:"Courier Prime",monospace;font-size:8.6pt}
+.info div{padding:3px 6px;border-right:1px solid var(--ink)}
+.info div:last-child{border-right:0}
+.info b{display:block;font-size:7.4pt;text-transform:uppercase;letter-spacing:.05em}
+.notes{margin:0;padding-left:5mm}
+.notes li{margin:.6mm 0}
+</style>
 
 <div class="head">
   <div>
     <h1>KAPASZKODNI · napi ütemterv</h1>
-    <div class="draft">TERVEZET v2 – RENDEZŐI JÓVÁHAGYÁSRA</div>
+    <div class="small">tervezet v3</div>
   </div>
-  <div class="meta">2026.11.12. csütörtök · stúdió<br>Munkanap: 8:30–17:45<br>Rendező: Ágoston András · DP: Détári Szabolcs</div>
+  <div class="meta">2026.11.12. csütörtök · stúdió<br>Rendező: Ágoston András · DP: Détári Szabolcs<br>2. asszisztens: Balázs · Script: Bence</div>
 </div>
-
-<div class="key">
-  <b>A lényeg:</b> mind a <b>16 shot</b> belefér a napba. A sorrend a vilkó fénytervei szerint csoportosít: minden fényfelállást egyszer építünk fel, és egyikhez sem térünk vissza. A nap szoros: külön tartalék nincs, a kiegészítő jelenet 10 perce szolgál pufferként. Ha 13:05-kor csúszásban vagyunk, a kiegészítő jelenet kimarad.
-  <br><b>Változás az előző tervhez képest:</b> a 2/1C a 2/4 elé került, a 2/6 pedig a 2/1E után jön, mert a vilkó szerint ott azonos a fény.
+<div class="info">
+  <div><b>Crew call</b>8:30</div>
+  <div><b>Prezentálás</b>10:00–10:15</div>
+  <div><b>Ebéd</b>12:20–12:50</div>
+  <div><b>Wrap</b>18:00</div>
 </div>
 
 <h2>Idősáv</h2>
@@ -90,63 +102,30 @@ li{margin:0.6mm 0}
   <div id="tlhalves"></div>
   <div class="legend">
     <span><i style="background:var(--prep)"></i>Előkészület</span>
+    <span><i style="background:var(--pres)"></i>Prezentálás</span>
     <span><i style="background:var(--shoot)"></i>Forgatás</span>
     <span><i style="background:var(--move)"></i>Átállás</span>
     <span><i style="background:var(--lunch)"></i>Ebéd</span>
-    <span><i style="background:var(--res)"></i>Kiegészítő jelenet / puffer</span>
-    <span><i style="background:var(--wrap)"></i>Lezárás</span>
+    <span><i style="background:var(--res)"></i>Tartalék</span>
   </div>
 </div>
 
-<h2>Részletes napi ütemterv</h2>
+<h2>Időrend</h2>
 <table>
-  <thead><tr><th>Időpont</th><th>Jelenet / Feladat</th><th>Kamerabeállítás</th><th>Tevékenység</th><th>Idő</th></tr></thead>
+  <thead><tr><th>Idő</th><th>Jel. / shot</th><th>Beállítás</th><th>Megjegyzés</th><th>Perc</th></tr></thead>
   <tbody id="rows"></tbody>
 </table>
-<p class="small" style="margin-top:2mm">Időellenőrzési pontok (2. asszisztens): ha valamelyik pontnál 10 percnél többet csúszunk, lépjen életbe a vágási lista.</p>
-<div class="check"><span>10:35 – 1/1 kész</span><span>11:50 – konyha kész</span><span>13:05 – 2/2 kész</span><span>14:35 – alapfényes blokk kész</span><span>16:05 – 2/5 kész</span><span>17:00 – este indul</span></div>
+<div class="check" style="margin-top:2mm"><span>10:50 1/1</span><span>12:05 konyha</span><span>13:05 2/2</span><span>14:35 2/6</span><span>16:05 2/5</span><span>17:15 este</span></div>
 
-<h2>Miért ebben a sorrendben?</h2>
-<ol>
-  <li><b>Helyszín szerint haladunk:</b> előbb a konyha, aztán a nappali. A konyhai fény reggel már kész, így 10:00-kor azonnal indulhatunk.</li>
-  <li><b>A vilkó fénytervei szerint csoportosítunk.</b> A konyhában az 1/1 és az 1/3A–B fénye azonos (csak a sín rövidebb), az 1/2-nek saját fénye van. A nappaliban három fényfelállás van, ezeket egymás után építjük fel, és egyikhez sem térünk vissza:
-    <ul>
-      <li><b>Alapfény</b> (2 PavoTube): 2/2, 2/1A, 2/1B, 2/1E, 2/6</li>
-      <li><b>Gyakorlati lámpával</b> (+1 PavoTube, Andris lámpája): 2/1C, 2/4, 2/5</li>
-      <li><b>Nagyi alulról</b> (lámpa nélkül, plusz frost és net): 2/3A, 2/3B</li>
-    </ul>
-  </li>
-  <li><b>A nappaliban a nagytotál (2/2) az első:</b> ez a master, ebben áll össze a fény és a mozgás. Utána a szűkebb plánok ehhez igazodnak.</li>
-  <li><b>A 2/1C (felülés) közvetlenül a 2/4 (ölelés) előtt forog.</b> Ugyanaz a fény, és a történetben is egymás után jönnek, így a színészek is egyben játszhatják.</li>
-  <li><b>A 2/6 a high angle shotok után jön:</b> a vilkó szerint a kamera magic armmal a rúdra kerül, és a rúd felől néz le a Fiúra.</li>
-  <li><b>A Nagyi-shotok és az esti jelenet a nap végén vannak.</b> Ekkor Somára már csak a 2/3A–B-ben van szükség a kép szélén, a 3. jelenetben egyáltalán nem.</li>
-  <li><b>Az esti jelenet az utolsó,</b> mert a nappali fényét így csak egyszer kell estire átállítani, nappalira vissza már nem. A 3/2 fénye a 3/1 egyszerűsített változata.</li>
-</ol>
-
-<h3>Ebédszünet: 12:05–12:35 (30 perc)</h3>
-<ul>
-  <li>A konyhai blokk 11:50-re zárul. Ebéd előtt még elvégezzük a nappali átállását, így ebéd után azonnal forgathatjuk a 2/2-t.</li>
-  <li>Két nagy blokk közé esik: előtte 1 óra 50 perc forgatás van. A Fiúnak jól jön a pihenő az evős jelenet után és a fekvenyomás előtt.</li>
-  <li>Ebéd alatt senki nem dolgozik. A 30 percnél hosszabb ebédhez egy shotot el kellene hagyni.</li>
-</ul>
-
-<h2>Beállítások összesítése</h2>
+<h2>Fénybeállítások (vilkó)</h2>
 <table>
-  <thead><tr><th>Fényfelállás (vilkó)</th><th>Shotok sorrendben</th><th>Jel.</th><th>Db</th><th>Forgatás</th><th>Átállás</th><th>Össz.</th></tr></thead>
-  <tbody>
-    <tr><td>Konyha, a Fiú felől</td><td>1/1 → 1/3A → 1/3B</td><td>1</td><td>3</td><td>60′</td><td>10′ (+ reggeli setup)</td><td>70′</td></tr>
-    <tr><td>Konyha, ellenirány</td><td>1/2</td><td>1</td><td>1</td><td>25′</td><td>15′</td><td>40′</td></tr>
-    <tr><td>Nappali alapfény</td><td>2/2 → kieg. → 2/1A → 2/1B → 2/1E → 2/6</td><td>2</td><td>5 + kieg.</td><td>90′</td><td>45′</td><td>135′</td></tr>
-    <tr><td>Nappali, gyakorlati lámpával</td><td>2/1C → 2/4 → 2/5</td><td>2</td><td>3</td><td>50′</td><td>40′</td><td>90′</td></tr>
-    <tr><td>Nappali, Nagyi alulról</td><td>2/3A → 2/3B</td><td>2</td><td>2</td><td>25′</td><td>15′</td><td>40′</td></tr>
-    <tr><td>Nappali este</td><td>3/1 → 3/2</td><td>3</td><td>2</td><td>25′</td><td>20′</td><td>45′</td></tr>
-    <tr style="font-weight:700"><td>Összesen</td><td></td><td></td><td>16 + kieg.</td><td>275′</td><td>145′</td><td>420′</td></tr>
-  </tbody>
+  <thead><tr><th>Fény</th><th>Shotok</th><th>Shot</th><th>Átállás</th><th>Össz.</th></tr></thead>
+  <tbody id="setups"></tbody>
 </table>
-<p class="small" style="margin-top:1mm">Az átállás tartalmazza az ebéd előtti nappali-átállást is. A forgatási időben benne van a kiegészítő jelenet 10 perce.</p>
 
+<div class="cols" style="margin-top:2mm">
 <div class="avoid">
-<h3>Optikák – a vilkó és a shotlist eltérései (Szabolcs döntése)</h3>
+<h2>Optika: shotlist / vilkó</h2>
 <table>
   <thead><tr><th>Shot</th><th>Shotlist</th><th>Vilkó</th></tr></thead>
   <tbody>
@@ -156,130 +135,115 @@ li{margin:0.6mm 0}
     <tr><td>3/1, 3/2</td><td>50 mm</td><td>30 mm</td></tr>
   </tbody>
 </table>
-<p class="small">Az ütemtervben a shotlist optikái szerepelnek; ahol eltér, zárójelben a vilkóé.</p>
+<p class="small" style="margin-top:1mm">Az időrendben a shotlist szerinti optika áll, zárójelben a vilkó.</p>
 </div>
-
-<h2>Szűk keresztmetszetek és hatékonyság</h2>
-<div class="cols">
-<div>
-  <h3>A legidőigényesebb pontok</h3>
-  <ul>
-    <li><b>2/4 (Ultra High):</b> dolly, A és B kamera, két szereplő, érzelmi csúcs. Legyen a sín lerakva és a mozgás végigpróbálva, mielőtt a színészek odaállnak.</li>
-    <li><b>1/1:</b> a dolly mellett a tányérokat is minden take előtt vissza kell állítani. Legalább 3 sorozat teli és üres tányér kell.</li>
-    <li><b>2/2:</b> a teljes jelenet egyben, totálból. Soma legfeljebb 3-szor nyomjon teljes erőből, a próbák könnyített rúddal mennek.</li>
-  </ul>
-  <h3>Amivel időt nyerünk</h3>
-  <ul>
-    <li>A plafon-anyagot reggel szerelje fel a berendező csapat, amíg a konyhában forgatunk.</li>
-    <li>A nappali legyen teljesen berendezve 10:45-re, mert a 1/3B ajtó-reveal shotjában látszik a pad.</li>
-    <li>A 2/4 sínjét a grip rakja le a 2/1C alatt, ha nem lóg bele a képbe.</li>
-    <li>A konyhai fények bontása az esti jelenet alatt induljon.</li>
-    <li>A közeliken könnyű vagy műanyag tárcsák legyenek a rúdon.</li>
-  </ul>
-</div>
-<div>
-  <h3>Vágási lista, ha csúszunk (sorrendben)</h3>
-  <ol>
-    <li>Kiegészítő jelenet → –10′</li>
-    <li>2/1E a B kamerával, a 2/1B-vel egy időben (ha Szabolcs jóváhagyja) → –15′</li>
-    <li>2/5 a B kamerával, a 2/4 alatt (ha Szabolcs jóváhagyja) → –20′</li>
-    <li>3/2 a 3/1-gyel egy beállításból → –10′</li>
-  </ol>
-  <h3 class="warn">Biztonság</h3>
-  <p>A szkript szerint a végén a rúd ráesik a Fiúra. Ezt <b>soha ne valódi súllyal</b> vegyük fel! Üres vagy könnyített rúd kell, és mindig álljon mellette valaki, aki biztosít.</p>
-</div>
-</div>
-
-<h2>Nyitott kérdések</h2>
-<ol>
-  <li><b>B kamera:</b> a 2/4 vilkóján szerepel. Egész nap velünk lesz? Ha igen, a vágási lista 2. és 3. pontja előre is beépíthető, és kb. 35 perc tartalék keletkezik.</li>
-  <li><b>Optikák:</b> lásd a fenti táblázatot.</li>
-  <li><b>Kiegészítő jelenet</b> (bicepsz, nyújtás): bekerül a filmbe?</li>
-  <li><b>Plafon-anyag:</b> csak a 2/3A–B-hez kell, vagy más alacsony szögű nappali shotban is látszik a plafon?</li>
-  <li><b>A shotlist ellentmondásai:</b> a 3/2 leírása („Nagyi alulról”) nem egyezik a beállítással („eye level”); a 1/3A támasza „Dolly”, a mozgása „Static”.</li>
-  <li><b>Stúdió:</b> meddig van meg? A teljes bontás 45–60 perc, a 15 perces lezárás erre nem elég.</li>
-  <li><b>Színészhívás 09:00:</b> ez csak javaslat.</li>
-</ol>
-
 <div class="avoid">
 <h2>Összesítés</h2>
+<table class="sum"><tbody id="sum"></tbody></table>
+</div>
+</div>
+
 <div class="cols">
-<table class="sum">
-  <tbody>
-    <tr><td>Előkészület (8:30–10:00)</td><td id="s-prep"></td></tr>
-    <tr><td>Tényleges forgatás (16 shot)</td><td id="s-shoot"></td></tr>
-    <tr><td>Kiegészítő jelenet / puffer</td><td id="s-res"></td></tr>
-    <tr><td>Technikai átállások</td><td id="s-move"></td></tr>
-    <tr><td>Ebédszünet</td><td id="s-lunch"></td></tr>
-    <tr><td>Lezárás</td><td id="s-wrap"></td></tr>
-    <tr class="tot"><td>Összesen</td><td id="total"></td></tr>
-  </tbody>
-</table>
-<div>
-  <p><b>Tervezett anyag:</b> 3 jelenet és a kiegészítő jelenet, mind a 16 shot, 6 fényfelállásban.</p>
-  <p id="checktxt"></p>
+<div class="avoid">
+<h2>Megjegyzések</h2>
+<ul class="notes">
+  <li class="warn">Rúd ráesik (2. jel.): csak üres vagy könnyített rúddal, mellette biztosító.</li>
+  <li>Soma: a 2/2-ben max. 3 teljes take, próba könnyített rúddal. Közeliken műanyag tárcsák.</li>
+  <li>1/1: legalább 3 sor teli és üres tányér.</li>
+  <li>A nappali 11:00-ra legyen berendezve (1/3B-ben látszik a pad).</li>
+  <li>Plafon-anyag: reggel, a konyhai forgatás alatt (Kristóf, Gyuri).</li>
+  <li>A 2/4 sínje lerakható a 2/1C alatt, ha nem látszik.</li>
+  <li>Konyhai fények bontása az esti jelenet alatt.</li>
+</ul>
+</div>
+<div class="avoid">
+<h2>Ha csúszunk</h2>
+<ol class="notes">
+  <li>Tartalékok felhasználása (2 × 15′).</li>
+  <li>Kiegészítő jelenet kimarad (–10′).</li>
+  <li>2/1E B kamerával a 2/1B alatt (–15′).</li>
+  <li>2/5 B kamerával a 2/4 alatt (–20′).</li>
+  <li>3/2 a 3/1-gyel egy beállításból (–10′).</li>
+</ol>
 </div>
 </div>
+
+<div class="avoid">
+<h2>Nyitott kérdések</h2>
+<ol class="notes">
+  <li>B kamera egész nap? (Szabolcs)</li>
+  <li>Optikák: lásd a táblázatot. (Szabolcs)</li>
+  <li>Plafon-anyag csak a 2/3A–B-hez kell? (Szabolcs)</li>
+  <li>Kiegészítő jelenet (bicepsz, nyújtás) marad? (Andris)</li>
+  <li>3/2: alulról vagy eye level? 1/3A: dolly mozog vagy static? (Andris)</li>
+  <li>Stúdió címe, parkolás, meddig van meg a stúdió (bontás 45–60′). (gyártás)</li>
+  <li>Színészhívás 9:00, smink Kata? (gyártás)</li>
+</ol>
 </div>
 
 <script>
-// [kezdés, vég, típus, feladat, beállítás, tevékenység]
+// [kezdés, vég, típus, feladat, beállítás, megjegyzés, fénycsoport]
 const R=[
- ["08:30","08:45","prep","Érkezés","–","Kávé, napi eligazítás, <b>biztonsági eligazítás</b> (rúd, 12K, kábelek)"],
- ["08:45","09:45","prep","Technikai setup","Konyha (vilkó 1-1)","Konyha világítása, ablakfények, 2,4 m-es dolly sín, a kamera összerakása. Közben: a konyha és a nappali berendezése, plafon-anyag a nappaliban (Kristóf, Gyuri). <b>09:00:</b> színészek érkeznek, 09:00–09:45 smink és jelmez (Kata)"],
- ["09:45","10:00","prep","Próba","1/1","Mozgások és kameramozgás egyeztetése, fókuszjelek"],
- ["10:00","10:35","shoot","1. jel. – 1/1","ECU → Medium, 50 mm, dolly out","Felvétel. Tányérok visszaállítása take-enként"],
- ["10:35","10:45","move","Átállás","→ 1,2 m-es sín, 75 mm (vilkó: 50)","A fény marad"],
- ["10:45","11:10","shoot","1. jel. – 1/3A + 1/3B","CU, 75 mm (vilkó: 50), dolly","A teljes jelenet a Fiú oldaláról. Az utolsó take-ek végén dolly hátra (ajtó-reveal)"],
- ["11:10","11:25","move","Átállás","→ ellenirány, 25 mm, sticks","Átvilágítás Nagyi oldalára (vilkó 1-2)"],
- ["11:25","11:50","shoot","1. jel. – 1/2","Cowboy, 25 mm, svenk","A teljes jelenet Nagyi oldaláról, ordítással"],
- ["11:50","12:05","move","Átállás a nappaliba","Nappali alapfény (vilkó 2-2)","Fény és kamera a 2/2-höz, hogy ebéd után azonnal indulhassunk"],
- ["12:05","12:35","lunch","EBÉD","–","–"],
- ["12:35","13:05","shoot","2. jel. – 2/2","Wide, 25 mm, sticks","Rövid próba, majd a teljes jelenet egyben, totálból. Soma legfeljebb 3-szor nyomjon teljes erőből"],
- ["13:05","13:15","res","Kiegészítő jelenet","Kézi kamera, ugyanaz a fény","Bicepsz és nyújtás, 1–2 shot. <b>Ha csúszunk, kimarad</b>"],
- ["13:15","13:20","move","Átállás","→ 50 mm, low angle, oldalról","A fény marad"],
- ["13:20","13:35","shoot","2. jel. – 2/1A","MCU, 50 mm, sticks","Felvétel"],
- ["13:35","13:45","move","Átállás","→ high angle a pad fölé, 35 mm (vilkó: 50)","Riser vagy overhead állvány"],
- ["13:45","14:00","shoot","2. jel. – 2/1B","Medium, 35 mm (vilkó: 50)","A Fiú fekvő helyzetben"],
- ["14:00","14:05","move","Optikacsere","→ 75 mm","–"],
- ["14:05","14:15","shoot","2. jel. – 2/1E","ECU, 75 mm","Az utolsó push"],
- ["14:15","14:25","move","Átállás","→ kamera magic armmal a rúdon, 25 mm","–"],
- ["14:25","14:35","shoot","2. jel. – 2/6","Bench bar POV, 25 mm","A rúd felől a Fiúra, a kamera leköveti a mozgást"],
- ["14:35","14:50","move","Átállás","Vilkó 2-1C: +1 PavoTube, gyakorlati lámpa","Kamera a 2/1C pozícióba"],
- ["14:50","15:05","shoot","2. jel. – 2/1C","Medium, 35 mm (vilkó: 50)","A Fiú felülő helyzetben"],
- ["15:05","15:20","move","Átállás","→ 2,4 m-es sín, A és B kamera, 35 mm","Sín lerakása, próba"],
- ["15:20","15:45","shoot","2. jel. – 2/4 <span class='warn'>⚠ Ultra High</span>","MCU → Medium, dolly, A + B kamera","Felülés, ölelés, visszafekvés"],
- ["15:45","15:55","move","Átállás","→ ablak felőli oldal, 50 mm (vilkó: 75)","–"],
- ["15:55","16:05","shoot","2. jel. – 2/5","ECU inzert","Nagyi arca az ölelésnél"],
- ["16:05","16:15","move","Átállás","Vilkó 2-3A: lámpa le, PavoTube áthelyezve, frost, net","Plafon-anyag ellenőrzése"],
- ["16:15","16:30","shoot","2. jel. – 2/3A","CU, 35/50 mm, kézi, alulról","Nagyi alulról"],
- ["16:30","16:35","move","Optikacsere","→ 75 mm","–"],
- ["16:35","16:45","shoot","2. jel. – 2/3B","ECU, 75 mm, kézi, alulról","Nagyi végső reakciója"],
- ["16:45","17:00","move","Átállás estére","Vilkó 3-1","Nagy lámpák ki, 6 PavoTube, LiteMat, Aputure, gyakorlati lámpa, TV-tartalom"],
- ["17:00","17:15","shoot","3. jel. – 3/1","CU, 50 mm (vilkó: 30), sticks","Nagyi a TV-t nézi"],
- ["17:15","17:20","move","Átállás","Vilkó 3-2: lámpák egy része le","Közben a konyhai fények bontása"],
- ["17:20","17:30","shoot","3. jel. – 3/2","CU, 50 mm (vilkó: 30), sticks","Nagyi végső reakciója"],
- ["17:30","17:45","wrap","Lezárás","–","Zárás, kellékek összeszedése, bontás, napi riport (Bence)"]
+ ["08:30","08:45","prep","Érkezés","–","Eligazítás, biztonság (rúd, 12K, kábelek)"],
+ ["08:45","09:45","prep","Setup","Konyha (vilkó 1-1)","Fény, ablakfények, 2,4 m sín, kamera. Berendezés konyha + nappali, plafon-anyag. 9:00 színészek, smink/jelmez 9:00–9:45"],
+ ["09:45","10:00","prep","Próba","1/1","Mozgás, fókuszjelek"],
+ ["10:00","10:15","pres","Prezentálás","–","Stábnak"],
+ ["10:15","10:50","shoot","1/1","ECU → Medium, 50 mm, dolly out","Tányérok visszaállítása take-enként","K1"],
+ ["10:50","11:00","move","Átállás","1,2 m sín, 75 mm (50)","Fény marad","K1"],
+ ["11:00","11:25","shoot","1/3A + 1/3B","CU, 75 mm (50), dolly","Teljes jelenet a Fiúról, a végén dolly hátra","K1"],
+ ["11:25","11:40","move","Átállás","Ellenirány, 25 mm, sticks","Vilkó 1-2","K2"],
+ ["11:40","12:05","shoot","1/2","Cowboy, 25 mm, svenk","Teljes jelenet Nagyiról","K2"],
+ ["12:05","12:20","move","Átállás nappaliba","Vilkó 2-2","Ebéd után azonnal 2/2","N1"],
+ ["12:20","12:50","lunch","EBÉD","–","–"],
+ ["12:50","13:05","shoot","2/2","Wide, 25 mm, sticks","Teljes jelenet egyben, max. 3 teljes take","N1"],
+ ["13:05","13:15","shoot","Kiegészítő","Kézi, ugyanaz a fény","Bicepsz, nyújtás. Csúszásnál kimarad","N1"],
+ ["13:15","13:20","move","Átállás","50 mm, low angle, oldalról","","N1"],
+ ["13:20","13:35","shoot","2/1A","MCU, 50 mm, sticks","","N1"],
+ ["13:35","13:45","move","Átállás","High angle, 35 mm (50)","Riser / overhead","N1"],
+ ["13:45","14:00","shoot","2/1B","Medium, 35 mm (50)","Fekvő","N1"],
+ ["14:00","14:05","move","Optikacsere","75 mm","","N1"],
+ ["14:05","14:15","shoot","2/1E","ECU, 75 mm","Utolsó push","N1"],
+ ["14:15","14:25","move","Átállás","Magic arm a rúdon, 25 mm","","N1"],
+ ["14:25","14:35","shoot","2/6","Bench bar POV, 25 mm","Rúd felől a Fiúra","N1"],
+ ["14:35","14:50","move","Átállás","Vilkó 2-1C: +1 PavoTube, prakti lámpa","","N2"],
+ ["14:50","15:05","shoot","2/1C","Medium, 35 mm (50)","Felülő","N2"],
+ ["15:05","15:20","move","Átállás","2,4 m sín, A + B kamera, 35 mm","","N2"],
+ ["15:20","15:45","shoot","2/4 <span class='warn'>Ultra High</span>","MCU → Medium, dolly","Felülés, ölelés, visszafekvés","N2"],
+ ["15:45","15:55","move","Átállás","Ablak felől, 50 mm (75)","","N2"],
+ ["15:55","16:05","shoot","2/5","ECU inzert","Nagyi arca ölelésnél","N2"],
+ ["16:05","16:20","res","Tartalék","–",""],
+ ["16:20","16:30","move","Átállás","Vilkó 2-3A: prakti le, PavoTube át, frost, net","","N3"],
+ ["16:30","16:45","shoot","2/3A","CU, 35/50 mm, kézi, alulról","","N3"],
+ ["16:45","16:50","move","Optikacsere","75 mm","","N3"],
+ ["16:50","17:00","shoot","2/3B","ECU, 75 mm, kézi, alulról","Végső reakció","N3"],
+ ["17:00","17:15","move","Átállás estére","Vilkó 3-1","Nagy lámpák ki, 6 PavoTube, LiteMat, Aputure, prakti, TV","E"],
+ ["17:15","17:30","shoot","3/1","CU, 50 mm (30), sticks","TV-t nézi","E"],
+ ["17:30","17:35","move","Átállás","Vilkó 3-2","Konyhai fények bontása közben","E"],
+ ["17:35","17:45","shoot","3/2","CU, 50 mm (30), sticks","Végső reakció","E"],
+ ["17:45","18:00","res","Tartalék","–",""]
 ];
+const GROUPS=[["K1","Konyha, Fiú felől"],["K2","Konyha, ellenirány"],["N1","Nappali alapfény"],["N2","Nappali + prakti lámpa"],["N3","Nappali, Nagyi alulról"],["E","Nappali este"]];
 const m=t=>{const[h,mm]=t.split(":").map(Number);return h*60+mm};
-const START=m("08:30"),END=m("17:45"),SPAN=END-START;
+const START=m("08:30"),END=m("18:00"),SPAN=END-START;
+const dur=r=>m(r[1])-m(r[0]);
 let prev=START,ok=true;
 for(const r of R){if(m(r[0])!==prev)ok=false;prev=m(r[1])}
 if(prev!==END)ok=false;
-const total=R.reduce((a,r)=>a+m(r[1])-m(r[0]),0);
-const sumBy=k=>R.filter(r=>r[2]===k).reduce((a,r)=>a+m(r[1])-m(r[0]),0);
-const shots=R.filter(r=>r[2]==="shoot").map(r=>r[3]).join(" ").match(/\d\/\d[A-E]?/g)||[];
-document.getElementById("rows").innerHTML=R.map(r=>`<tr class="k-${r[2]}"><td class="t">${r[0]}–${r[1]}</td><td class="task">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="d">${m(r[1])-m(r[0])}′</td></tr>`).join("");
-const COL={prep:"var(--prep)",shoot:"var(--shoot)",move:"var(--move)",lunch:"var(--lunch)",res:"var(--res)",wrap:"var(--wrap)"};
-const short=r=>{if(r[2]==="res")return"kieg.";let t=r[3].replace(/<[^>]+>/g,"").replace(/^\d\. jel\. – /,"").replace(/ ⚠.*/,"").trim();return t.replace(/(\d\/\d)([A-E]) \+ \1([A-E])/,"$1$2+$3").replace(/ \+ /g,"+")};
-const INLINE={prep:"előkészület",lunch:"EBÉD",wrap:"zárás"};
+const total=R.reduce((a,r)=>a+dur(r),0);
+const sumBy=k=>R.filter(r=>r[2]===k).reduce((a,r)=>a+dur(r),0);
+document.getElementById("rows").innerHTML=R.map(r=>`<tr class="k-${r[2]}"><td class="t">${r[0]}–${r[1]}</td><td class="task">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="d">${dur(r)}′</td></tr>`).join("")
+ +`<tr class="k-wrapmark"><td class="t">18:00</td><td>WRAP</td><td>–</td><td>Bontás, pakolás, napi riport (Bence)</td><td class="d"></td></tr>`;
+document.getElementById("setups").innerHTML=GROUPS.map(([g,n])=>{const rs=R.filter(r=>r[6]===g);const sh=rs.filter(r=>r[2]==="shoot");const a=sh.reduce((x,r)=>x+dur(r),0),b=rs.filter(r=>r[2]==="move").reduce((x,r)=>x+dur(r),0);return`<tr><td>${n}</td><td>${sh.map(r=>r[3].replace(/<[^>]+>.*$/,"").trim()).join(", ")}</td><td>${a}′</td><td>${b}′</td><td>${a+b}′</td></tr>`}).join("");
+const COL={prep:"var(--prep)",pres:"var(--pres)",shoot:"var(--shoot)",move:"var(--move)",lunch:"var(--lunch)",res:"var(--res)",wrap:"var(--wrap)"};
+const short=r=>{if(r[3]==="Kiegészítő")return"kieg.";let t=r[3].replace(/<[^>]+>.*$/,"").trim();return t.replace(/(\d\/\d)([A-E]) \+ \1([A-E])/,"$1$2+$3")};
+const INLINE={prep:"előkészület",lunch:"EBÉD",pres:"prez.",res:"tartalék"};
 function half(name,from,to){
   const span=to-from, rs=R.filter(r=>m(r[0])>=from&&m(r[1])<=to);
   let bar="",labs="",i=0;
   for(const r of rs){
-    const st=m(r[0]),d=m(r[1])-st,pct=x=>(x-from)/span*100;
+    const st=m(r[0]),d=dur(r),pct=x=>(x-from)/span*100;
     bar+=`<div class="seg" style="width:${d/span*100}%;background:${COL[r[2]]}">${INLINE[r[2]]&&d>=(r[2]==="prep"?45:15)?INLINE[r[2]]:""}</div>`;
-    if(r[2]==="shoot"||r[2]==="res"){labs+=`<span class="${i%2?"lo":"hi"}" style="left:${pct(st+d/2)}%">${short(r)}</span>`;i++}
+    if(r[2]==="shoot"){labs+=`<span class="${i%2?"lo":"hi"}" style="left:${pct(st+d/2)}%">${short(r)}</span>`;i++}
   }
   const tk=[];for(let t=Math.ceil(from/30)*30;t<=to;t+=30)if(t===from||t===to||(t-from>=20&&to-t>=20))tk.push(t);
   if(tk[0]!==from)tk.unshift(from); if(tk[tk.length-1]!==to)tk.push(to);
@@ -287,12 +251,10 @@ function half(name,from,to){
   const ticks=tk.map((t,j)=>`<span class="${j===0?"first":j===tk.length-1?"last":""}" style="left:${(t-from)/span*100}%">${fmt(t)}</span>`).join("");
   return`<div class="half"><div class="hname">${name}</div><div><div class="labs">${labs}</div><div class="bar">${bar}</div><div class="ticks">${ticks}</div></div></div>`;
 }
-document.getElementById("tlhalves").innerHTML=half("Délelőtt",START,m("12:35"))+half("Délután",m("12:35"),END);
-for(const k of ["prep","shoot","res","move","lunch","wrap"])document.getElementById("s-"+k).textContent=sumBy(k)+"′";
-document.getElementById("total").textContent=`${total}′ = ${Math.floor(total/60)} óra ${total%60} perc`;
-document.getElementById("checktxt").innerHTML=ok&&total===555
- ?`<b>Ellenőrzés:</b> a 8:30–17:45 közötti 9 óra 15 perc = 555 perc, ez pontosan egyezik az összeggel, és sehol nincs hézag vagy átfedés. A táblázatban ${new Set(shots).size} különböző shot szerepel.`
- :`<span class="warn">Ellenőrzés: HIBA – az időpontok nem folytonosak vagy az összeg nem 555 perc.</span>`;
+document.getElementById("tlhalves").innerHTML=half("Délelőtt",START,m("12:50"))+half("Délután",m("12:50"),END);
+const fmtM=x=>`${Math.floor(x/60)}:${String(x%60).padStart(2,"0")}`;
+document.getElementById("sum").innerHTML=[["Előkészület","prep"],["Prezentálás","pres"],["Forgatás (16 shot + kieg.)","shoot"],["Átállás","move"],["Ebéd","lunch"],["Tartalék","res"]].map(([l,k])=>`<tr><td>${l}</td><td>${sumBy(k)}′</td></tr>`).join("")
+ +`<tr class="tot"><td>8:30–18:00</td><td>${ok&&total===570?total+"′ ("+fmtM(total)+")":"<span class='warn'>HIBA</span>"}</td></tr>`;
 </script>
 </body>
 </html>
