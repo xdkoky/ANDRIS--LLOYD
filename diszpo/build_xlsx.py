@@ -1,6 +1,6 @@
 # Szerkeszthető Excel-ütemterv az utemterv.html adataiból.
 # Futtatás: python3 diszpo/build_xlsx.py  ->  diszpo/Kapaszkodni_utemterv_2026-11-12.xlsx
-# Az Időrend lapon csak a „Perc” oszlopot kell átírni: a kezdés/vég időpontok és az összesítők képletből számolódnak.
+# Az Időrend lapon csak a „Rászánt idő” oszlopot kell átírni: a kezdés/vég időpontok és az összesítők képletből számolódnak.
 import json, os, re, subprocess
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -49,105 +49,152 @@ def header(ws, row, titles, widths=None):
             ws.column_dimensions[chr(64 + i)].width = w
 
 wb = Workbook()
+YEL = PatternFill("solid", fgColor="FFF2CC")
+RED_FILL = PatternFill("solid", fgColor="F4C7C3")
 
 # ---------- Időrend ----------
 ws = wb.active
 ws.title = "Időrend"
 ws["A1"] = "KAPASZKODNI – napi ütemterv"; ws["A1"].font = Font(bold=True, size=16)
 ws["A2"] = "2026.11.12. csütörtök · stúdió · Rendező: Ágoston András · DP: Détári Szabolcs · 2. asszisztens: Balázs · Script: Bence"
-LBL = [("A3", "Crew call"), ("A4", "Tervezett wrap"), ("A5", "Számolt wrap"), ("A6", "Eltérés (perc)")]
-for c, t in LBL:
+for c, t in [("A3", "Crew call"), ("A4", "Tervezett wrap"), ("A5", "Számolt wrap"), ("A6", "Túllépés (perc)")]:
     ws[c] = t; ws[c].font = BOLD
 ws["B3"] = mins(R[0][0]) / 1440; ws["B3"].number_format = TIME
 ws["B4"] = mins(R[-1][1]) / 1440; ws["B4"].number_format = TIME
 for c in ("B3", "B4"):
-    ws[c].fill = PatternFill("solid", fgColor="FFF2CC")
-ws["D3"] = "Csak a sárga cellákat írd át. Az időrendben a Rászánt idő oszlopot,"
-ws["D4"] = "a Kezdés és a Vég magától számolódik. Új sornál másold le a fölötte lévő sor képleteit."
-for c in ("D3", "D4"):
+    ws[c].fill = YEL
+ws["D3"] = "Csak a sárga cellákat írd át (Rászánt idő, crew call, tervezett wrap). A Kezdés és a Vég ebből számolódik."
+ws["D4"] = "Az Eltérés oszlop mutatja, hol adtatok több (piros) vagy kevesebb (zöld) időt, mint az eredeti terv."
+ws["D5"] = "A wrap után eső sorok pirosak: ennyit kell lecsípni. Ötletek az Összesítés lapon."
+for c in ("D3", "D4", "D5"):
     ws[c].font = Font(italic=True, color="666666")
 HR = 8
-header(ws, HR, ["Kezdés", "Vég", "Rászánt idő (perc)", "Típus", "Jel. / shot", "Beállítás", "Megjegyzés", "Fény"],
-       [15, 9, 11, 13, 18, 34, 52, 8])
+header(ws, HR, ["Kezdés", "Vég", "Rászánt idő (perc)", "Eredeti terv (perc)", "Eltérés (perc)", "Típus",
+                "Jel. / shot", "Beállítás", "Megjegyzés", "Fény"],
+       [15, 9, 11, 11, 10, 13, 18, 34, 46, 7])
 first = HR + 1
 for i, r in enumerate(R):
     row = first + i
-    ws.cell(row=row, column=1, value="=$B$3" if i == 0 else f"=B{row-1}")
+    minutes = mins(r[1]) - mins(r[0])
+    ws.cell(row=row, column=1, value="=$B$3" if i == 0 else f"=A{row-1}+C{row-1}/1440")
     ws.cell(row=row, column=2, value=f"=A{row}+C{row}/1440")
-    ws.cell(row=row, column=3, value=mins(r[1]) - mins(r[0]))
-    ws.cell(row=row, column=4, value=TYPES[r[2]])
-    ws.cell(row=row, column=5, value=clean(r[3]))
-    ws.cell(row=row, column=6, value=clean(r[4]))
-    ws.cell(row=row, column=7, value=clean(r[5]))
-    ws.cell(row=row, column=8, value=r[6] if len(r) > 6 else None)
-    for col in range(1, 9):
+    ws.cell(row=row, column=3, value=minutes)
+    ws.cell(row=row, column=4, value=minutes)
+    ws.cell(row=row, column=5, value=f"=C{row}-D{row}")
+    ws.cell(row=row, column=6, value=TYPES[r[2]])
+    ws.cell(row=row, column=7, value=clean(r[3]))
+    ws.cell(row=row, column=8, value=clean(r[4]))
+    ws.cell(row=row, column=9, value=clean(r[5]))
+    ws.cell(row=row, column=10, value=r[6] if len(r) > 6 else None)
+    for col in range(1, 11):
         c = ws.cell(row=row, column=col)
         c.border = BOX; c.alignment = WRAP
     pc = ws.cell(row=row, column=3)
-    pc.fill = PatternFill("solid", fgColor="FFF2CC"); pc.font = BOLD; pc.alignment = Alignment(horizontal="center", vertical="top")
+    pc.fill = YEL; pc.font = BOLD; pc.alignment = Alignment(horizontal="center", vertical="top")
+    for col in (4, 5):
+        ws.cell(row=row, column=col).alignment = Alignment(horizontal="center", vertical="top")
+    ws.cell(row=row, column=4).font = Font(color="777777")
     ws.cell(row=row, column=1).number_format = TIME
     ws.cell(row=row, column=2).number_format = TIME
+    ws.cell(row=row, column=5).number_format = '+0;-0;0'
     if r[2] in ("shoot", "pres", "lunch"):
-        ws.cell(row=row, column=5).font = BOLD
+        ws.cell(row=row, column=7).font = BOLD
 last = first + len(R) - 1
 wrow = last + 1
 ws.cell(row=wrow, column=1, value=f"=B{last}").number_format = TIME
-ws.cell(row=wrow, column=5, value="WRAP")
-ws.cell(row=wrow, column=7, value="Bontás, pakolás, napi riport (Bence)")
-for col in range(1, 9):
+ws.cell(row=wrow, column=3, value=f"=SUM(C{first}:C{last})")
+ws.cell(row=wrow, column=4, value=f"=SUM(D{first}:D{last})")
+ws.cell(row=wrow, column=5, value=f"=C{wrow}-D{wrow}").number_format = '+0;-0;0'
+ws.cell(row=wrow, column=7, value="WRAP")
+ws.cell(row=wrow, column=9, value="Bontás, pakolás, napi riport (Bence)")
+for col in range(1, 11):
     c = ws.cell(row=wrow, column=col)
     c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="6B6B6B"); c.border = BOX
 ws["B5"] = f"=B{last}"; ws["B5"].number_format = TIME; ws["B5"].font = BOLD
-ws["B6"] = "=ROUND((B5-B4)*1440,0)"
-ws.conditional_formatting.add("B6", FormulaRule(formula=["$B$6>0"], font=Font(bold=True, color="B3261E")))
+ws["B6"] = "=MAX(0,ROUND((B5-B4)*1440,0))"; ws["B6"].font = BOLD
+ws["C6"] = '=IF(B6>0,"Túl van az időn – csípj le "&B6&" percet","Belefér")'
+ws.conditional_formatting.add("B6:C6", FormulaRule(formula=["$B$6>0"], font=Font(bold=True, color="B3261E"), fill=RED_FILL))
+ws.conditional_formatting.add("B6:C6", FormulaRule(formula=["$B$6=0"], font=Font(bold=True, color="1E7B3C")))
 
-dv = DataValidation(type="list", formula1='"' + ",".join(TYPES.values()) + '"', allow_blank=True)
-ws.add_data_validation(dv); dv.add(f"D{first}:D{last+40}")
+END = last + 40
+# 1. wrap után eső sor: piros (ez az első szabály, ez nyer)
+ws.conditional_formatting.add(f"A{first}:J{END}",
+    FormulaRule(formula=[f'AND($C{first}<>"",$B{first}>$B$4+0.00001)'], fill=RED_FILL, font=Font(color="B3261E", bold=True), stopIfTrue=True))
+# 2. eltérés színe
+ws.conditional_formatting.add(f"E{first}:E{END}", FormulaRule(formula=[f"$E{first}>0"], font=Font(bold=True, color="B3261E")))
+ws.conditional_formatting.add(f"E{first}:E{END}", FormulaRule(formula=[f"$E{first}<0"], font=Font(bold=True, color="1E7B3C")))
+# 3. típus szerinti háttér
 for name, color in FILL.items():
-    ws.conditional_formatting.add(f"A{first}:B{last+40} D{first}:H{last+40}",
-        FormulaRule(formula=[f'$D{first}="{name}"'], fill=PatternFill("solid", fgColor=color)))
+    ws.conditional_formatting.add(f"A{first}:B{END} D{first}:J{END}",
+        FormulaRule(formula=[f'$F{first}="{name}"'], fill=PatternFill("solid", fgColor=color)))
+dv = DataValidation(type="list", formula1='"' + ",".join(TYPES.values()) + '"', allow_blank=True)
+ws.add_data_validation(dv); dv.add(f"F{first}:F{END}")
 ws.freeze_panes = f"A{first}"
 ws.page_setup.orientation = "landscape"; ws.page_setup.fitToWidth = 1; ws.page_setup.fitToHeight = 0
 ws.sheet_properties.pageSetUpPr.fitToPage = True
 ws.print_title_rows = f"{HR}:{HR}"
 
-RNG = lambda col: f"'Időrend'!${col}${first}:${col}${last+40}"
+RNG = lambda col: f"'Időrend'!${col}${first}:${col}${END}"
 
 # ---------- Összesítés ----------
 s = wb.create_sheet("Összesítés")
 s["A1"] = "Összesítés"; s["A1"].font = Font(bold=True, size=14)
-header(s, 3, ["Típus", "Perc", "Óra:perc"], [28, 10, 10])
+header(s, 3, ["Típus", "Eredeti (perc)", "Most (perc)", "Eltérés"], [34, 14, 12, 10])
 row = 4
 for name in TYPES.values():
     s.cell(row=row, column=1, value=name)
-    s.cell(row=row, column=2, value=f'=SUMIF({RNG("D")},A{row},{RNG("C")})')
-    s.cell(row=row, column=3, value=f"=B{row}/1440").number_format = "[h]:mm"
+    s.cell(row=row, column=2, value=f'=SUMIF({RNG("F")},A{row},{RNG("D")})')
+    s.cell(row=row, column=3, value=f'=SUMIF({RNG("F")},A{row},{RNG("C")})')
+    s.cell(row=row, column=4, value=f"=C{row}-B{row}").number_format = '+0;-0;0'
     row += 1
-s.cell(row=row, column=1, value="Összesen").font = BOLD
-s.cell(row=row, column=2, value=f"=SUM(B4:B{row-1})").font = BOLD
-s.cell(row=row, column=3, value=f"=B{row}/1440").number_format = "[h]:mm"
-row += 2
-s.cell(row=row, column=1, value="Crew call"); s.cell(row=row, column=2, value="='Időrend'!B3").number_format = TIME
-s.cell(row=row + 1, column=1, value="Tervezett wrap"); s.cell(row=row + 1, column=2, value="='Időrend'!B4").number_format = TIME
-s.cell(row=row + 2, column=1, value="Számolt wrap"); s.cell(row=row + 2, column=2, value="='Időrend'!B5").number_format = TIME
-s.cell(row=row + 3, column=1, value="Eltérés (perc, + = túllépés)"); s.cell(row=row + 3, column=2, value="='Időrend'!B6")
-s.cell(row=row + 4, column=1, value="Forgatási sorok száma")
-s.cell(row=row + 4, column=2, value=f'=COUNTIF({RNG("D")},"Forgatás")')
+tot = row
+s.cell(row=tot, column=1, value="Összesen").font = BOLD
+for col, L in ((2, "B"), (3, "C"), (4, "D")):
+    s.cell(row=tot, column=col, value=f"=SUM({L}4:{L}{tot-1})").font = BOLD
+s.cell(row=tot, column=4).number_format = '+0;-0;0'
+s.conditional_formatting.add(f"D4:D{tot}", FormulaRule(formula=["D4>0"], font=Font(bold=True, color="B3261E")))
+s.conditional_formatting.add(f"D4:D{tot}", FormulaRule(formula=["D4<0"], font=Font(bold=True, color="1E7B3C")))
+row = tot + 2
+s.cell(row=row, column=1, value="Wrap").font = Font(bold=True, size=12); row += 1
+pairs = [("Crew call", "='Időrend'!B3", TIME), ("Tervezett wrap", "='Időrend'!B4", TIME),
+         ("Számolt wrap", "='Időrend'!B5", TIME), ("Túllépés (perc)", "='Időrend'!B6", None)]
+for label, fml, fmt in pairs:
+    s.cell(row=row, column=1, value=label); c = s.cell(row=row, column=2, value=fml)
+    if fmt: c.number_format = fmt
+    row += 1
+row += 1
+s.cell(row=row, column=1, value="Honnan lehet lecsípni?").font = Font(bold=True, size=12); row += 1
+cut = [("Tartalék (teljesen elvehető)", f'=SUMIF({RNG("F")},"Tartalék",{RNG("C")})'),
+       ("Kiegészítő jelenet (kihagyható)", f'=SUMIF({RNG("G")},"Kiegészítő",{RNG("C")})'),
+       ("2/1E B kamerával a 2/1B alatt (ha van B kamera)", "=15"),
+       ("2/5 B kamerával a 2/4 alatt (ha van B kamera)", "=20"),
+       ("3/2 a 3/1-gyel egy beállításból", "=10")]
+cs = row
+for label, fml in cut:
+    s.cell(row=row, column=1, value=label); s.cell(row=row, column=2, value=fml); row += 1
+s.cell(row=row, column=1, value="Összesen lecsípható").font = BOLD
+s.cell(row=row, column=2, value=f"=SUM(B{cs}:B{row-1})").font = BOLD
+s.cell(row=row + 1, column=1, value="Ezután is túllépés (perc)").font = BOLD
+s.cell(row=row + 1, column=2, value=f"=MAX(0,'Időrend'!B6-B{row})").font = BOLD
+s.conditional_formatting.add(f"B{row+1}", FormulaRule(formula=[f"B{row+1}>0"], font=Font(bold=True, color="B3261E")))
+s.cell(row=row + 2, column=1, value="A B kamerás és a 3/2-es lehetőség becslés; a rendező és az operatőr dönt róla.").font = Font(italic=True, color="666666")
 
 # ---------- Fénybeállítások ----------
 f = wb.create_sheet("Fénybeállítások")
 f["A1"] = "Fénybeállítások (vilkó)"; f["A1"].font = Font(bold=True, size=14)
-header(f, 3, ["Kód", "Fény", "Shotok", "Forgatás (perc)", "Átállás (perc)", "Összesen"], [7, 26, 46, 14, 14, 11])
+header(f, 3, ["Kód", "Fény", "Shotok", "Eredeti (perc)", "Most (perc)", "Eltérés"], [7, 26, 46, 14, 12, 10])
 row = 4
 for code, name in GROUPS:
     shots = [clean(r[3]).replace(" – Ultra High", "") for r in R if len(r) > 6 and r[6] == code and r[2] == "shoot"]
     f.cell(row=row, column=1, value=code); f.cell(row=row, column=2, value=name); f.cell(row=row, column=3, value=", ".join(shots))
-    f.cell(row=row, column=4, value=f'=SUMIFS({RNG("C")},{RNG("H")},A{row},{RNG("D")},"Forgatás")')
-    f.cell(row=row, column=5, value=f'=SUMIFS({RNG("C")},{RNG("H")},A{row},{RNG("D")},"Átállás")')
-    f.cell(row=row, column=6, value=f"=D{row}+E{row}")
+    f.cell(row=row, column=4, value=f'=SUMIF({RNG("J")},A{row},{RNG("D")})')
+    f.cell(row=row, column=5, value=f'=SUMIF({RNG("J")},A{row},{RNG("C")})')
+    f.cell(row=row, column=6, value=f"=E{row}-D{row}").number_format = '+0;-0;0'
     for col in range(1, 7):
         f.cell(row=row, column=col).border = BOX
     row += 1
+f.conditional_formatting.add(f"F4:F{row-1}", FormulaRule(formula=["F4>0"], font=Font(bold=True, color="B3261E")))
+f.conditional_formatting.add(f"F4:F{row-1}", FormulaRule(formula=["F4<0"], font=Font(bold=True, color="1E7B3C")))
 
 # ---------- Optika ----------
 o = wb.create_sheet("Optika")
@@ -170,7 +217,7 @@ blocks = [
         "Plafon-anyag: reggel, a konyhai forgatás alatt (Kristóf, Gyuri).",
         "A 2/4 sínje lerakható a 2/1C alatt, ha nem látszik.",
         "Konyhai fények bontása az esti jelenet alatt."]),
-    ("Ha csúszunk", [
+    ("Ha csúszunk (lásd még: Összesítés lap)", [
         "1. Tartalékok felhasználása (15′ + 5′).",
         "2. Kiegészítő jelenet kimarad (–10′).",
         "3. 2/1E B kamerával a 2/1B alatt (–15′).",
@@ -196,9 +243,4 @@ for title, items in blocks:
 
 wb.calculation.fullCalcOnLoad = True
 wb.save(OUT)
-import shutil, tempfile
-tmp = tempfile.mkdtemp()
-subprocess.run(["soffice", "--headless", "--calc", "--convert-to", "xlsx:Calc MS Excel 2007 XML", "--outdir", tmp, OUT],
-               check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-shutil.move(os.path.join(tmp, os.path.basename(OUT)), OUT)
 print("kész:", OUT)
