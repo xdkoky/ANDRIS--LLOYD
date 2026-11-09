@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<title>Kapaszkodni – forgatókönyv (nyomtatható)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Szabványos forgatókönyv-tükör A4-en: Courier 12pt, jelenetszám mindkét margón, a jelenetfej alatt a hozzá tartozó shotok. */
+@page{size:A4;margin:25mm 12mm 22mm 22mm}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:#000}
+body{padding:0 10mm 0 16mm;font-family:"Courier Prime","Courier New",Courier,monospace;font-size:12pt;line-height:1.18}
+.title{height:245mm;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;break-after:page;position:relative}
+.title h1{font-size:12pt;font-weight:700;text-decoration:underline;margin:0 0 12pt;letter-spacing:.05em}
+.title p{margin:0 0 12pt}
+.title .contact{position:absolute;left:0;bottom:0;text-align:left;font-size:10pt}
+.title .prod{position:absolute;right:0;bottom:0;text-align:right;font-size:10pt}
+.sh{font-weight:700;text-transform:uppercase;margin:24pt 0 4pt;position:relative;break-after:avoid}
+.sh::before{content:attr(data-n);position:absolute;left:-13mm}
+.sh::after{content:attr(data-n);position:absolute;right:-9mm}
+.shots{font-size:8.5pt;margin:0 0 12pt;border:1px solid #000;padding:2pt 5pt;display:inline-block;break-after:avoid}
+.ac{margin:0 0 12pt}
+.ch{margin:12pt 0 0 37mm;text-transform:uppercase;break-after:avoid}
+.pa{margin:0 0 0 27mm;width:60mm;break-after:avoid;break-before:avoid}
+.dl{margin:0 0 12pt 17mm;width:88mm;break-before:avoid}
+.end{text-align:center;margin:24pt 0}
+#script>.sh:first-child{margin-top:0}
+body.only-title #script,body.only-body .title{display:none}
+.newscene{break-before:page}
+</style>
+</head>
+<body>
+<section class="title">
+  <h1>KAPASZKODNI</h1>
+  <p>Írta</p>
+  <p>Ágoston András</p>
+  <div class="contact">andreasaugosto@gmail.com<br>+36 30 395 4456</div>
+  <div class="prod">Forgatási példány<br>2026.11.12.</div>
+</section>
+<div id="script"></div>
+<script>
+window.render=function({SCRIPT,SHOTS}){
+  let h="";
+  for(const[t,txt,sc]of SCRIPT){
+    if(t==="sh"){
+      const n=sc?String(sc):"";
+      const ids=SHOTS.filter(s=>s.sc===sc).map(s=>`${s.sc}/${s.no}`);
+      h+=`<div class="sh" data-n="${n}">${txt}</div>`;
+      h+=ids.length?`<div class="shots">Shotok: ${ids.join(" · ")}</div>`:`<div class="shots">Nincs a shotlistben</div>`;
+    }
+    else if(t==="end")h+=`<div class="end">${txt}</div>`;
+    else h+=`<div class="${t}">${txt}</div>`;
+  }
+  document.getElementById("script").innerHTML=h;
+};
+</script>
+</body>
+</html>
