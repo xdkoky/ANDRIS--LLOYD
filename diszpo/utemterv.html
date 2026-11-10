@@ -12,7 +12,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:#fff;color:var(--ink)}
 body{font-family:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;font-size:9pt;line-height:1.32}
-h1{font-family:"Courier Prime",monospace;font-size:17pt;margin:0;letter-spacing:.02em}
+h1{font-family:"Courier Prime",monospace;font-size:15pt;margin:0;letter-spacing:.02em;white-space:nowrap}
 h2{font-family:"Courier Prime",monospace;font-size:11.5pt;margin:6mm 0 2mm;padding:2px 6px;background:var(--bar);border:1px solid var(--ink)}
 h3{font-size:10pt;margin:3mm 0 1mm}
 p{margin:0 0 2mm}
@@ -86,15 +86,15 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
 <div class="head">
   <div>
     <h1>KAPASZKODNI · napi ütemterv</h1>
-    <div class="small">tervezet v3</div>
+    <div class="small" id="src"></div>
   </div>
-  <div class="meta">2026.11.12. csütörtök · stúdió<br>Rendező: Ágoston András · DP: Détári Szabolcs<br>2. asszisztens: Balázs · Script: Bence</div>
+  <div class="meta">2026.11.12. csütörtök · stúdió<br>Rendező: Ágoston András · DP: Détári Szabolcs<br><span id="crewline"></span></div>
 </div>
 <div class="info">
-  <div><b>Crew call</b>8:30</div>
-  <div><b>Prezentálás</b>10:00–10:15</div>
-  <div><b>Ebéd</b>12:20–12:50</div>
-  <div><b>Wrap</b>18:00</div>
+  <div><b>Crew call</b><span id="i-call"></span></div>
+  <div><b>Prezentálás</b><span id="i-pres"></span></div>
+  <div><b>Ebéd</b><span id="i-lunch"></span></div>
+  <div><b>Wrap</b><span id="i-wrap"></span></div>
 </div>
 
 <h2>Idősáv</h2>
@@ -106,7 +106,7 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
     <span><i style="background:var(--shoot)"></i>Forgatás</span>
     <span><i style="background:var(--move)"></i>Átállás</span>
     <span><i style="background:var(--lunch)"></i>Ebéd</span>
-    <span><i style="background:var(--res)"></i>Tartalék</span>
+    <span><i style="background:var(--res)"></i>Plusz idő</span>
   </div>
 </div>
 
@@ -115,7 +115,7 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
   <thead><tr><th>Idő</th><th>Jel. / shot</th><th>Beállítás</th><th>Megjegyzés</th><th>Perc</th></tr></thead>
   <tbody id="rows"></tbody>
 </table>
-<div class="check" style="margin-top:2mm"><span>10:50 1/1</span><span>12:05 konyha</span><span>13:05 2/2</span><span>14:45 2/6</span><span>15:55 2/4</span><span>17:25 este</span></div>
+<div class="check" id="check" style="margin-top:2mm"></div>
 
 <h2>Fénybeállítások (vilkó)</h2>
 <table>
@@ -150,7 +150,7 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
   <li class="warn">Rúd ráesik (2. jel.): csak üres vagy könnyített rúddal, mellette biztosító.</li>
   <li>Soma: a 2/2-ben max. 3 teljes take, próba könnyített rúddal. Közeliken műanyag tárcsák.</li>
   <li>1/1: legalább 3 sor teli és üres tányér.</li>
-  <li>A nappali 11:00-ra legyen berendezve (1/3B-ben látszik a pad).</li>
+  <li>A nappali <span id="n-nappali"></span>-ra legyen berendezve (1/3B-ben látszik a pad).</li>
   <li>Plafon-anyag: reggel, a konyhai forgatás alatt (Kristóf, Gyuri).</li>
   <li>A 2/4 sínje lerakható a 2/1C alatt, ha nem látszik.</li>
   <li>Konyhai fények bontása az esti jelenet alatt.</li>
@@ -159,13 +159,18 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
 <div class="avoid">
 <h2>Ha csúszunk</h2>
 <ol class="notes">
-  <li>Tartalékok felhasználása (15′ + 5′).</li>
-  <li>Kiegészítő jelenet kimarad (–10′).</li>
+  <li id="n-plusz"></li>
+  <li>MONTAGE kimarad (–10′).</li>
   <li>2/1E B kamerával a 2/1B alatt (–15′).</li>
   <li>2/5 B kamerával a 2/4 alatt (–20′).</li>
   <li>3/2 a 3/1-gyel egy beállításból (–10′).</li>
 </ol>
 </div>
+</div>
+
+<div class="avoid" id="crewbox">
+<h2>Stáb</h2>
+<div class="cols"><ul class="notes" id="crew1"></ul><ul class="notes" id="crew2"></ul></div>
 </div>
 
 <div class="avoid">
@@ -174,7 +179,6 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
   <li>B kamera egész nap? (Szabolcs)</li>
   <li>Optikák: lásd a táblázatot. (Szabolcs)</li>
   <li>Plafon-anyag csak a 2/3A–B-hez kell? (Szabolcs)</li>
-  <li>Kiegészítő jelenet (bicepsz, nyújtás) marad? (Andris)</li>
   <li>3/2: alulról vagy eye level? 1/3A: dolly mozog vagy static? (Andris)</li>
   <li>Stúdió címe, parkolás, meddig van meg a stúdió (bontás 45–60′). (gyártás)</li>
   <li>Színészhívás 9:00, smink Kata? (gyártás)</li>
@@ -182,62 +186,91 @@ tr.k-wrapmark td{background:var(--wrap);color:#fff;font-weight:700}
 </div>
 
 <script>
+// ADAT-ELEJE (a sync_utemterv.py írja felül a táblázatból)
 // [kezdés, vég, típus, feladat, beállítás, megjegyzés, fénycsoport]
 const R=[
- ["08:30","08:45","prep","Érkezés","–","Eligazítás, biztonság (rúd, 12K, kábelek)"],
- ["08:45","09:45","prep","Setup","Konyha (vilkó 1-1)","Fény, ablakfények, 2,4 m sín, kamera. Berendezés konyha + nappali, plafon-anyag. 9:00 színészek, smink/jelmez 9:00–9:45"],
- ["09:45","10:00","prep","Próba","1/1","Mozgás, fókuszjelek"],
- ["10:00","10:15","pres","Prezentálás","–","Stábnak"],
- ["10:15","10:50","shoot","1/1","ECU → Medium, 50 mm, dolly out","Tányérok visszaállítása take-enként","K1"],
- ["10:50","11:00","move","Átállás","1,2 m sín, 75 mm (50)","Fény marad","K1"],
- ["11:00","11:25","shoot","1/3A + 1/3B","CU, 75 mm (50), dolly","Teljes jelenet a Fiúról, a végén dolly hátra","K1"],
- ["11:25","11:40","move","Átállás","Ellenirány, 25 mm, sticks","Vilkó 1-2","K2"],
- ["11:40","12:05","shoot","1/2","Cowboy, 25 mm, svenk","Teljes jelenet Nagyiról","K2"],
- ["12:05","12:20","move","Átállás nappaliba","Vilkó 2-2","Ebéd után azonnal 2/2","N1"],
- ["12:20","12:50","lunch","EBÉD","–","–"],
- ["12:50","13:05","shoot","2/2","Wide, 25 mm, sticks","Teljes jelenet egyben, max. 3 teljes take","N1"],
- ["13:05","13:15","move","Átállás","Kézi kamera","","N1"],
- ["13:15","13:25","shoot","Kiegészítő","Kézi, ugyanaz a fény","Bicepsz, nyújtás. Csúszásnál kimarad","N1"],
- ["13:25","13:30","move","Átállás","50 mm, low angle, oldalról","","N1"],
- ["13:30","13:45","shoot","2/1A","MCU, 50 mm, sticks","","N1"],
- ["13:45","13:55","move","Átállás","High angle, 35 mm (50)","Riser / overhead","N1"],
- ["13:55","14:10","shoot","2/1B","Medium, 35 mm (50)","Fekvő","N1"],
- ["14:10","14:15","move","Optikacsere","75 mm","","N1"],
- ["14:15","14:25","shoot","2/1E","ECU, 75 mm","Utolsó push","N1"],
- ["14:25","14:35","move","Átállás","Magic arm a rúdon, 25 mm","","N1"],
- ["14:35","14:45","shoot","2/6","Bench bar POV, 25 mm","Rúd felől a Fiúra","N1"],
- ["14:45","15:00","move","Átállás","Vilkó 2-1C: +1 PavoTube, prakti lámpa","","N2"],
- ["15:00","15:15","shoot","2/1C","Medium, 35 mm (50)","Felülő","N2"],
- ["15:15","15:30","move","Átállás","2,4 m sín, A + B kamera, 35 mm","","N2"],
- ["15:30","15:55","shoot","2/4 <span class='warn'>Ultra High</span>","MCU → Medium, dolly","Felülés, ölelés, visszafekvés","N2"],
- ["15:55","16:10","res","Tartalék","–",""],
- ["16:10","16:20","move","Átállás","Ablak felől, 50 mm (75)","","N2"],
- ["16:20","16:30","shoot","2/5","ECU inzert","Nagyi-közelik eleje: arca ölelésnél","N2"],
- ["16:30","16:40","move","Átállás","Vilkó 2-3A: prakti le, PavoTube át, frost, net","","N3"],
- ["16:40","16:55","shoot","2/3A","CU, 35/50 mm, kézi, alulról","","N3"],
- ["16:55","17:00","move","Optikacsere","75 mm","","N3"],
- ["17:00","17:10","shoot","2/3B","ECU, 75 mm, kézi, alulról","Végső reakció","N3"],
- ["17:10","17:25","move","Átállás estére","Vilkó 3-1","Nagy lámpák ki, 6 PavoTube, LiteMat, Aputure, prakti, TV","E"],
- ["17:25","17:40","shoot","3/1","CU, 50 mm (30), sticks","TV-t nézi","E"],
- ["17:40","17:45","move","Átállás","Vilkó 3-2","Konyhai fények bontása közben","E"],
- ["17:45","17:55","shoot","3/2","CU, 50 mm (30), sticks","Végső reakció","E"],
- ["17:55","18:00","res","Tartalék","–",""]
+ ["08:30", "08:45", "prep", "Érkezés", "–", "Eligazítás, biztonság (rúd, 12K, kábelek)"],
+ ["08:45", "09:45", "prep", "Setup", "Konyha (vilkó 1-1)", "Fény, ablakfények, 2,4 m sín, kamera. Berendezés konyha + nappali, plafon-anyag. 9:00 színészek, smink/jelmez 9:00–9:45"],
+ ["09:45", "10:00", "prep", "Próba", "1/1", "Mozgás, fókuszjelek"],
+ ["10:00", "10:15", "pres", "Prezentálás", "–", "Stábnak"],
+ ["10:15", "10:50", "shoot", "1/1", "ECU → Medium, 50 mm, dolly out", "Tányérok visszaállítása take-enként", "K1"],
+ ["10:50", "11:00", "move", "Átállás", "sín, 75 mm (50)", "Fény marad", "K1"],
+ ["11:00", "11:25", "shoot", "1/3A + 1/3B", "CU, 75 mm (50), dolly", "Teljes jelenet a Fiúról, a végén dolly hátra", "K1"],
+ ["11:25", "11:40", "move", "Átállás", "Ellenirány, 25 mm, sticks", "Vilkó 1-2", "K2"],
+ ["11:40", "12:05", "shoot", "1/2", "Cowboy, 25 mm, svenk", "Teljes jelenet Nagyiról", "K2"],
+ ["12:05", "12:20", "move", "Átállás nappaliba", "Vilkó 2-2", "Ebéd után azonnal 2/2", "N1"],
+ ["12:20", "12:50", "lunch", "EBÉD", "–", "–"],
+ ["12:50", "13:05", "shoot", "2/2", "Wide, 25 mm, sticks", "Teljes jelenet egyben, max. 3 teljes take", "N1"],
+ ["13:05", "13:15", "move", "Átállás", "Montagera setup, kis korrekció", "", "N1"],
+ ["13:15", "13:25", "shoot", "MONTAGE", "statív, ugyanaz a fény", "Bicepsz, nyújtás. Csúszásnál kimarad", "N1"],
+ ["13:25", "13:35", "move", "Átállás", "Kb High angle, 35 mm (50)", "", "N1"],
+ ["13:35", "13:50", "shoot", "2/1B", "Medium, 35 mm (50)", "Fekvő Medium", "N1"],
+ ["13:50", "13:55", "move", "Átállás", "50 mm, oldalról", "", "N1"],
+ ["13:55", "14:10", "shoot", "2/1A", "MCU, 50 mm, sticks", "", "N1"],
+ ["14:10", "14:15", "move", "Optikacsere", "75 mm", "", "N1"],
+ ["14:15", "14:25", "shoot", "2/1E", "ECU, 75 mm", "Utolsó push, csak az arc", "N1"],
+ ["14:25", "14:40", "move", "Átállás", "Vilkó 2-1C: +1 PavoTube, prakti lámpa", "", "N2"],
+ ["14:40", "14:55", "shoot", "2/1C", "Medium, 35/50 mm", "Felülő Medium", "N2"],
+ ["14:55", "15:10", "move", "Átállás", "sín, 35 mm", "", "N2"],
+ ["15:10", "15:35", "shoot", "2/4 – DOLLY", "MCU → Medium, dolly", "Felülés, ölelés, visszafekvés", "N2"],
+ ["15:35", "15:45", "move", "Átállás", "Ablak felől, 50 mm (75)", "", "N2"],
+ ["15:45", "15:55", "shoot", "2/5", "ECU inzert", "Nagyi-közelik eleje: arca ölelésnél", "N2"],
+ ["15:55", "16:05", "move", "Átállás", "Vilkó 2-3A: prakti le, PavoTube át, frost, net", "", "N3"],
+ ["16:05", "16:20", "shoot", "2/3A", "CU, 35/50 mm, kézi, alulról", "", "N3"],
+ ["16:20", "16:25", "move", "Optikacsere", "75 mm", "", "N3"],
+ ["16:25", "16:35", "shoot", "2/3B", "ECU, 75 mm, kézi, alulról", "Végső reakció", "N3"],
+ ["16:35", "16:45", "move", "Átállás", "Magic arm a rúdon, 25 mm", "", "N1"],
+ ["16:45", "16:55", "shoot", "2/6", "Bench bar POV, 25 mm", "Rúd felől a Fiúra", "N1"],
+ ["16:55", "17:10", "move", "Átállás estére", "Vilkó 3-1", "Nagy lámpák ki, 6 PavoTube, LiteMat, Aputure, prakti, TV", "E"],
+ ["17:10", "17:25", "shoot", "3/1", "CU, 50 mm (30), sticks", "TV-t nézi", "E"],
+ ["17:25", "17:30", "move", "Átállás", "Vilkó 3-2", "Konyhai fények bontása közben", "E"],
+ ["17:30", "17:40", "shoot", "3/2", "CU, 50 mm (30), sticks", "Végső reakció", "E"]
 ];
+const CREW=["1AD: Tóth Tomi", "1st AC: Spányik Máté", "2AD: Lázár Balázs Barnabás", "2nd AC: Volniansky Kata", "Szkriptes: Rubányi Bence", "Gaffer: Fih", "Berendező, kellékes: Radványi Kristóf", "Vilkó: Molnár Marcell, Blazsó Bálint", "Berendező: Borhi György", "Grip: Széll Bogi"];
+const PLAN={"call": "08:30", "wrap": "18:00", "src": "a szerkesztett táblázat alapján (Kapaszkodni_utemterv_V5.xlsx)"};
+// ADAT-VEGE
 const GROUPS=[["K1","Konyha, Fiú felől"],["K2","Konyha, ellenirány"],["N1","Nappali alapfény"],["N2","Nappali + prakti lámpa"],["N3","Nappali, Nagyi alulról"],["E","Nappali este"]];
 const m=t=>{const[h,mm]=t.split(":").map(Number);return h*60+mm};
-const START=m("08:30"),END=m("18:00"),SPAN=END-START;
+const f=x=>`${Math.floor(x/60)}:${String(x%60).padStart(2,"0")}`;
+const f2=x=>`${String(Math.floor(x/60)).padStart(2,"0")}:${String(x%60).padStart(2,"0")}`;
 const dur=r=>m(r[1])-m(r[0]);
+const START=m(PLAN.call), PLANWRAP=m(PLAN.wrap);
+const ACTUAL=R.length?m(R[R.length-1][1]):START;
+const PLUS=Math.max(0,PLANWRAP-ACTUAL), OVER=Math.max(0,ACTUAL-PLANWRAP);
+// a plusz idő látszódjon az időrendben és az idősávon is
+if(PLUS>0)R.push([f2(ACTUAL),f2(PLANWRAP),"res","Plusz idő","–","Ennyi idő marad a tervezett wrapig"]);
+const END=Math.max(ACTUAL,PLANWRAP),SPAN=END-START;
 let prev=START,ok=true;
 for(const r of R){if(m(r[0])!==prev)ok=false;prev=m(r[1])}
 if(prev!==END)ok=false;
 const total=R.reduce((a,r)=>a+dur(r),0);
 const sumBy=k=>R.filter(r=>r[2]===k).reduce((a,r)=>a+dur(r),0);
+const lab=r=>r[3].replace(/<[^>]+>.*$/,"").trim();
+const find=re=>R.find(r=>re.test(lab(r)));
+// fejléc
+document.getElementById("src").textContent=PLAN.src;
+const role=k=>(CREW.find(c=>c.toLowerCase().startsWith(k))||"").replace(/^[^:]*:\s*/,"");
+document.getElementById("crewline").textContent=[["1AD","1ad"],["2AD","2ad"],["Script","szkriptes"]].map(([n,k])=>role(k)?`${n}: ${role(k)}`:"").filter(Boolean).join(" · ");
+const pres=R.find(r=>r[2]==="pres"),lunch=R.find(r=>r[2]==="lunch");
+document.getElementById("i-call").textContent=f(START);
+document.getElementById("i-pres").textContent=pres?`${f(m(pres[0]))}–${f(m(pres[1]))}`:"–";
+document.getElementById("i-lunch").textContent=lunch?`${f(m(lunch[0]))}–${f(m(lunch[1]))}`:"–";
+document.getElementById("i-wrap").innerHTML=OVER?`${f(ACTUAL)} <span class="warn">(+${OVER}′)</span>`:f(ACTUAL)+(PLUS?` (terv: ${f(PLANWRAP)})`:"");
+// időrend
 document.getElementById("rows").innerHTML=R.map(r=>`<tr class="k-${r[2]}"><td class="t">${r[0]}–${r[1]}</td><td class="task">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="d">${dur(r)}′</td></tr>`).join("")
- +`<tr class="k-wrapmark"><td class="t">18:00</td><td>WRAP</td><td>–</td><td>Bontás, pakolás, napi riport (Bence)</td><td class="d"></td></tr>`;
-document.getElementById("setups").innerHTML=GROUPS.map(([g,n])=>{const rs=R.filter(r=>r[6]===g);const sh=rs.filter(r=>r[2]==="shoot");const a=sh.reduce((x,r)=>x+dur(r),0),b=rs.filter(r=>r[2]==="move").reduce((x,r)=>x+dur(r),0);return`<tr><td>${n}</td><td>${sh.map(r=>r[3].replace(/<[^>]+>.*$/,"").trim()).join(", ")}</td><td>${a}′</td><td>${b}′</td><td>${a+b}′</td></tr>`}).join("");
+ +`<tr class="k-wrapmark"><td class="t">${f2(ACTUAL)}</td><td>WRAP</td><td>–</td><td>Bontás, pakolás, napi riport</td><td class="d"></td></tr>`;
+// ellenőrzőpontok: minden fénycsoport utolsó shotjának vége
+const cps=[];
+for(const [g,n] of GROUPS){const sh=R.filter(r=>r[6]===g&&r[2]==="shoot");if(sh.length){const l=sh.reduce((a,r)=>m(r[1])>m(a[1])?r:a);cps.push([m(l[1]),`${f(m(l[1]))} ${lab(l)}`])}}
+document.getElementById("check").innerHTML=cps.sort((a,b)=>a[0]-b[0]).map(c=>`<span>${c[1]}</span>`).join("");
+const r13=find(/1\/3B/); document.getElementById("n-nappali").textContent=r13?f(m(r13[0])):"–";
+document.getElementById("n-plusz").textContent=PLUS?`Plusz idő felhasználása (${PLUS}′).`:OVER?`Már most ${OVER}′ túllépés: lásd az alábbiakat.`:"Nincs plusz idő.";
+// fénybeállítások
+document.getElementById("setups").innerHTML=GROUPS.map(([g,n])=>{const rs=R.filter(r=>r[6]===g);const sh=rs.filter(r=>r[2]==="shoot");const a=sh.reduce((x,r)=>x+dur(r),0),b=rs.filter(r=>r[2]==="move").reduce((x,r)=>x+dur(r),0);return`<tr><td>${n}</td><td>${sh.map(lab).join(", ")}</td><td>${a}′</td><td>${b}′</td><td>${a+b}′</td></tr>`}).join("");
+// idősáv
 const COL={prep:"var(--prep)",pres:"var(--pres)",shoot:"var(--shoot)",move:"var(--move)",lunch:"var(--lunch)",res:"var(--res)",wrap:"var(--wrap)"};
-const short=r=>{if(r[3]==="Kiegészítő")return"kieg.";let t=r[3].replace(/<[^>]+>.*$/,"").trim();return t.replace(/(\d\/\d)([A-E]) \+ \1([A-E])/,"$1$2+$3")};
-const INLINE={prep:"előkészület",lunch:"EBÉD",pres:"prez.",res:"tartalék"};
+const short=r=>{const t=lab(r);if(/^MONTAGE/i.test(t))return"montage";return t.replace(/ – .*$/,"").replace(/(\d\/\d)([A-E]) \+ \1([A-E])/,"$1$2+$3")};
+const INLINE={prep:"előkészület",lunch:"EBÉD",pres:"prez.",res:"plusz idő"};
 function half(name,from,to){
   const span=to-from, rs=R.filter(r=>m(r[0])>=from&&m(r[1])<=to);
   let bar="",labs="",i=0;
@@ -248,14 +281,20 @@ function half(name,from,to){
   }
   const tk=[];for(let t=Math.ceil(from/30)*30;t<=to;t+=30)if(t===from||t===to||(t-from>=20&&to-t>=20))tk.push(t);
   if(tk[0]!==from)tk.unshift(from); if(tk[tk.length-1]!==to)tk.push(to);
-  const fmt=t=>`${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`;
-  const ticks=tk.map((t,j)=>`<span class="${j===0?"first":j===tk.length-1?"last":""}" style="left:${(t-from)/span*100}%">${fmt(t)}</span>`).join("");
+  const ticks=tk.map((t,j)=>`<span class="${j===0?"first":j===tk.length-1?"last":""}" style="left:${(t-from)/span*100}%">${f(t)}</span>`).join("");
   return`<div class="half"><div class="hname">${name}</div><div><div class="labs">${labs}</div><div class="bar">${bar}</div><div class="ticks">${ticks}</div></div></div>`;
 }
-document.getElementById("tlhalves").innerHTML=half("Délelőtt",START,m("12:50"))+half("Délután",m("12:50"),END);
-const fmtM=x=>`${Math.floor(x/60)}:${String(x%60).padStart(2,"0")}`;
-document.getElementById("sum").innerHTML=[["Előkészület","prep"],["Prezentálás","pres"],["Forgatás (16 shot + kieg.)","shoot"],["Átállás","move"],["Ebéd","lunch"],["Tartalék","res"]].map(([l,k])=>`<tr><td>${l}</td><td>${sumBy(k)}′</td></tr>`).join("")
- +`<tr class="tot"><td>8:30–18:00</td><td>${ok&&total===570?total+"′ ("+fmtM(total)+")":"<span class='warn'>HIBA</span>"}</td></tr>`;
+const SPLIT=lunch?m(lunch[1]):START+Math.round(SPAN/2/5)*5;
+document.getElementById("tlhalves").innerHTML=half("Délelőtt",START,SPLIT)+half("Délután",SPLIT,END);
+// összesítés
+document.getElementById("sum").innerHTML=[["Előkészület","prep"],["Prezentálás","pres"],["Forgatás ("+R.filter(r=>r[2]==="shoot").length+" sor)","shoot"],["Átállás","move"],["Ebéd","lunch"],["Plusz idő / tartalék","res"]].map(([l,k])=>`<tr><td>${l}</td><td>${sumBy(k)}′</td></tr>`).join("")
+ +`<tr class="tot"><td>${f(START)}–${f(END)}</td><td>${ok&&total===SPAN?total+"′ ("+f(total)+")":"<span class='warn'>HIBA</span>"}</td></tr>`
+ +(OVER?`<tr><td class="warn">Túllépés a tervezett ${f(PLANWRAP)}-hoz képest</td><td class="warn">${OVER}′</td></tr>`:"");
+// stáb
+const half2=Math.ceil(CREW.length/2);
+document.getElementById("crew1").innerHTML=CREW.slice(0,half2).map(c=>`<li>${c}</li>`).join("");
+document.getElementById("crew2").innerHTML=CREW.slice(half2).map(c=>`<li>${c}</li>`).join("");
+if(!CREW.length)document.getElementById("crewbox").hidden=true;
 </script>
 </body>
 </html>
