@@ -16,6 +16,7 @@ const JOBS=[
   {html:'nyomtathato.html',out:'Kapaszkodni_diszpo_2026-11-12.pdf',footer:foot('KAPASZKODNI · napi diszpó · 2026.11.12. · kérdés esetén: 2. asszisztens (Balázs)')},
   {html:'shotlist_nyomtathato.html',out:'Kapaszkodni_shotlist.pdf',render:true,footer:foot('KAPASZKODNI · shotlist · 2026.11.12.')},
   {html:'utemterv.html',out:'Kapaszkodni_utemterv_2026-11-12.pdf',footer:foot('KAPASZKODNI · napi ütemterv · TERVEZET · 2026.11.12.')},
+  {html:'forgatokonyv_sorrend.html',out:'Kapaszkodni_forgatokonyv_forgatasi_sorrend.pdf',footer:foot('KAPASZKODNI · forgatókönyv forgatási sorrendben · 2026.11.12.')},
   // A forgatókönyv címlapja külön készül, hogy ne kapjon oldalszámot; utána pdfunite fűzi össze.
   {html:'forgatokonyv_nyomtathato.html',out:'_cim.pdf',render:true,mode:'only-title',header:'<span></span>',footer:'<span></span>'},
   {html:'forgatokonyv_nyomtathato.html',out:'_torzs.pdf',render:true,mode:'only-body',
