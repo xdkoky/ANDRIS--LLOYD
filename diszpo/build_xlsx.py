@@ -48,6 +48,37 @@ def header(ws, row, titles, widths=None):
         for i, w in enumerate(widths, 1):
             ws.column_dimensions[chr(64 + i)].width = w
 
+# ---------- Storyboard-rajzok (diszpo/storyboard, az eredeti shotlist PDF-ből) ----------
+import io
+from PIL import Image as PILImage
+from openpyxl.drawing.image import Image as XLImage
+from openpyxl.drawing.spreadsheet_drawing import TwoCellAnchor, AnchorMarker
+SB_DIR = os.path.join(HERE, "storyboard")
+SB = {}
+for r in R:
+    label = clean(r[3]).replace(" – Ultra High", "")
+    ids = [x.replace("/", "-") for x in re.findall(r"\d/\d[A-E]?", label)]
+    files = [os.path.join(SB_DIR, i + ".jpg") for i in ids if os.path.exists(os.path.join(SB_DIR, i + ".jpg"))]
+    if files and r[2] == "shoot":
+        SB[label] = files
+
+def add_sb(ws, files, row, col):
+    W, H = 360, 270                       # 4:3 vászon, a cellához igazítva nyúlik
+    canvas = PILImage.new("RGB", (W, H), "white")
+    w = W // len(files)
+    for k, fpath in enumerate(files):
+        im = PILImage.open(fpath).convert("RGB"); im.thumbnail((w - 6, H - 6))
+        canvas.paste(im, (k * w + (w - im.width) // 2, (H - im.height) // 2))
+    buf = io.BytesIO(); canvas.save(buf, "PNG"); buf.seek(0)
+    img = XLImage(buf)
+    from openpyxl.drawing.spreadsheet_drawing import OneCellAnchor
+    from openpyxl.drawing.xdr import XDRPositiveSize2D
+    from openpyxl.utils.units import pixels_to_EMU
+    img.width, img.height = 114, 84       # cella: kb. 124 × 88 px
+    img.anchor = OneCellAnchor(_from=AnchorMarker(col=col - 1, colOff=pixels_to_EMU(4), row=row - 1, rowOff=pixels_to_EMU(2)),
+                               ext=XDRPositiveSize2D(pixels_to_EMU(114), pixels_to_EMU(84)))
+    ws.add_image(img)
+
 wb = Workbook()
 YEL = PatternFill("solid", fgColor="FFF2CC")
 RED_FILL = PatternFill("solid", fgColor="F4C7C3")
@@ -63,30 +94,45 @@ ws["B3"] = mins(R[0][0]) / 1440; ws["B3"].number_format = TIME
 ws["B4"] = mins(R[-1][1]) / 1440; ws["B4"].number_format = TIME
 for c in ("B3", "B4"):
     ws[c].fill = YEL
-ws["D3"] = "Csak a sárga cellákat írd át (Rászánt idő, crew call, tervezett wrap). A Kezdés és a Vég ebből számolódik."
-ws["D4"] = "Az Eltérés oszlop mutatja, hol adtatok több (piros) vagy kevesebb (zöld) időt, mint az eredeti terv."
-ws["D5"] = "A wrap után eső sorok pirosak: ennyit kell lecsípni. Ötletek az Összesítés lapon."
-for c in ("D3", "D4", "D5"):
+ws["F3"] = "Csak a sárga cellákat írd át (Rászánt idő, crew call, tervezett wrap). A Kezdés és a Vég ebből számolódik."
+ws["F4"] = "Az Eltérés oszlop mutatja, hol adtatok több (piros) vagy kevesebb (zöld) időt, mint az eredeti terv."
+ws["F5"] = "A wrap után eső sorok pirosak: ennyit kell lecsípni. Ötletek az Összesítés lapon."
+ws["F6"] = "Egy egész sor áthelyezhető: jelöld ki a sor számát, és húzd feljebb vagy lejjebb (vagy Szerkesztés → Áthelyezés). Az időpontok utána igazodnak."
+for c in ("F3", "F4", "F5", "F6"):
     ws[c].font = Font(italic=True, color="666666")
 HR = 8
 header(ws, HR, ["Kezdés", "Vég", "Rászánt idő (perc)", "Eredeti terv (perc)", "Eltérés (perc)", "Típus",
-                "Jel. / shot", "Beállítás", "Megjegyzés", "Fény"],
-       [15, 9, 11, 11, 10, 13, 18, 34, 46, 7])
+                "Jel. / shot", "Storyboard", "Beállítás", "Megjegyzés", "Fény"],
+       [15, 9, 11, 11, 10, 13, 16, 17, 32, 42, 7])
 first = HR + 1
+ws.row_dimensions[1].height = 24
+for rr in range(2, HR):
+    ws.row_dimensions[rr].height = 15
+ws.row_dimensions[HR].height = 30
+for c in ("F3", "F4", "F5", "F6"):
+    ws[c].alignment = Alignment(wrap_text=False, vertical="center")
 for i, r in enumerate(R):
     row = first + i
     minutes = mins(r[1]) - mins(r[0])
-    ws.cell(row=row, column=1, value="=$B$3" if i == 0 else f"=A{row-1}+C{row-1}/1440")
+    # sorrendfüggetlen: a kezdés = crew call + az összes fölötte lévő rászánt idő (sor mozgatható)
+    ws.cell(row=row, column=1, value=f'=$B$3+(SUM(INDIRECT("C{first}:C"&ROW()))-C{row})/1440')
     ws.cell(row=row, column=2, value=f"=A{row}+C{row}/1440")
     ws.cell(row=row, column=3, value=minutes)
     ws.cell(row=row, column=4, value=minutes)
     ws.cell(row=row, column=5, value=f"=C{row}-D{row}")
     ws.cell(row=row, column=6, value=TYPES[r[2]])
     ws.cell(row=row, column=7, value=clean(r[3]))
-    ws.cell(row=row, column=8, value=clean(r[4]))
-    ws.cell(row=row, column=9, value=clean(r[5]))
-    ws.cell(row=row, column=10, value=r[6] if len(r) > 6 else None)
-    for col in range(1, 11):
+    ws.cell(row=row, column=9, value=clean(r[4]))
+    ws.cell(row=row, column=10, value=clean(r[5]))
+    ws.cell(row=row, column=11, value=r[6] if len(r) > 6 else None)
+    sb = SB.get(clean(r[3]).replace(" – Ultra High", ""))
+    if sb:
+        add_sb(ws, sb, row, 8)
+        ws.row_dimensions[row].height = 66
+    else:   # fix sormagasság, hogy a képek pontosan a saját sorukban maradjanak
+        longest = max(len(clean(r[4])) / 30, len(clean(r[5])) / 40)
+        ws.row_dimensions[row].height = 15 * max(1, min(4, int(longest) + 1))
+    for col in range(1, 12):
         c = ws.cell(row=row, column=col)
         c.border = BOX; c.alignment = WRAP
     pc = ws.cell(row=row, column=3)
@@ -101,31 +147,32 @@ for i, r in enumerate(R):
         ws.cell(row=row, column=7).font = BOLD
 last = first + len(R) - 1
 wrow = last + 1
-ws.cell(row=wrow, column=1, value=f"=B{last}").number_format = TIME
-ws.cell(row=wrow, column=3, value=f"=SUM(C{first}:C{last})")
-ws.cell(row=wrow, column=4, value=f"=SUM(D{first}:D{last})")
-ws.cell(row=wrow, column=5, value=f"=C{wrow}-D{wrow}").number_format = '+0;-0;0'
+ws.row_dimensions[wrow].height = 18
+ws.cell(row=wrow, column=1, value=f'=$B$3+SUM(INDIRECT("C{first}:C"&(ROW()-1)))/1440').number_format = TIME
 ws.cell(row=wrow, column=7, value="WRAP")
-ws.cell(row=wrow, column=9, value="Bontás, pakolás, napi riport (Bence)")
-for col in range(1, 11):
+ws.cell(row=wrow, column=10, value="Bontás, pakolás, napi riport (Bence)")
+for col in range(1, 12):
     c = ws.cell(row=wrow, column=col)
     c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="6B6B6B"); c.border = BOX
-ws["B5"] = f"=B{last}"; ws["B5"].number_format = TIME; ws["B5"].font = BOLD
+ws["A7"] = "Plusz idő (perc)"; ws["A7"].font = BOLD
+ws["B5"] = f'=$B$3+SUM(INDIRECT("C{first}:C{first+150}"))/1440'; ws["B5"].number_format = TIME; ws["B5"].font = BOLD
 ws["B6"] = "=MAX(0,ROUND((B5-B4)*1440,0))"; ws["B6"].font = BOLD
-ws["C6"] = '=IF(B6>0,"Túl van az időn – csípj le "&B6&" percet","Belefér")'
+ws["B7"] = "=MAX(0,ROUND((B4-B5)*1440,0))"; ws["B7"].font = BOLD
+ws["C6"] = '=IF(B6>0,"Túl van az időn – csípj le "&B6&" percet",IF(B7>0,"Van még "&B7&" perc plusz idő","Pont belefér"))'
 ws.conditional_formatting.add("B6:C6", FormulaRule(formula=["$B$6>0"], font=Font(bold=True, color="B3261E"), fill=RED_FILL))
 ws.conditional_formatting.add("B6:C6", FormulaRule(formula=["$B$6=0"], font=Font(bold=True, color="1E7B3C")))
+ws.conditional_formatting.add("B7", FormulaRule(formula=["$B$7>0"], font=Font(bold=True, color="1E7B3C"), fill=PatternFill("solid", fgColor="D5E8DC")))
 
 END = last + 40
 # 1. wrap után eső sor: piros (ez az első szabály, ez nyer)
-ws.conditional_formatting.add(f"A{first}:J{END}",
+ws.conditional_formatting.add(f"A{first}:K{END}",
     FormulaRule(formula=[f'AND($C{first}<>"",$B{first}>$B$4+0.00001)'], fill=RED_FILL, font=Font(color="B3261E", bold=True), stopIfTrue=True))
 # 2. eltérés színe
 ws.conditional_formatting.add(f"E{first}:E{END}", FormulaRule(formula=[f"$E{first}>0"], font=Font(bold=True, color="B3261E")))
 ws.conditional_formatting.add(f"E{first}:E{END}", FormulaRule(formula=[f"$E{first}<0"], font=Font(bold=True, color="1E7B3C")))
 # 3. típus szerinti háttér
 for name, color in FILL.items():
-    ws.conditional_formatting.add(f"A{first}:B{END} D{first}:J{END}",
+    ws.conditional_formatting.add(f"A{first}:B{END} D{first}:G{END} I{first}:K{END}",
         FormulaRule(formula=[f'$F{first}="{name}"'], fill=PatternFill("solid", fgColor=color)))
 dv = DataValidation(type="list", formula1='"' + ",".join(TYPES.values()) + '"', allow_blank=True)
 ws.add_data_validation(dv); dv.add(f"F{first}:F{END}")
@@ -134,7 +181,8 @@ ws.page_setup.orientation = "landscape"; ws.page_setup.fitToWidth = 1; ws.page_s
 ws.sheet_properties.pageSetUpPr.fitToPage = True
 ws.print_title_rows = f"{HR}:{HR}"
 
-RNG = lambda col: f"'Időrend'!${col}${first}:${col}${END}"
+# INDIRECT: a tartomány akkor is ugyanaz marad, ha sorokat mozgatnak
+RNG = lambda col: f'INDIRECT("\'Időrend\'!{col}{first}:{col}{first+150}")'
 
 # ---------- Összesítés ----------
 s = wb.create_sheet("Összesítés")
@@ -157,7 +205,8 @@ s.conditional_formatting.add(f"D4:D{tot}", FormulaRule(formula=["D4<0"], font=Fo
 row = tot + 2
 s.cell(row=row, column=1, value="Wrap").font = Font(bold=True, size=12); row += 1
 pairs = [("Crew call", "='Időrend'!B3", TIME), ("Tervezett wrap", "='Időrend'!B4", TIME),
-         ("Számolt wrap", "='Időrend'!B5", TIME), ("Túllépés (perc)", "='Időrend'!B6", None)]
+         ("Számolt wrap", "='Időrend'!B5", TIME), ("Túllépés (perc)", "='Időrend'!B6", None),
+         ("Plusz idő (perc)", "='Időrend'!B7", None)]
 for label, fml, fmt in pairs:
     s.cell(row=row, column=1, value=label); c = s.cell(row=row, column=2, value=fml)
     if fmt: c.number_format = fmt
@@ -187,8 +236,8 @@ row = 4
 for code, name in GROUPS:
     shots = [clean(r[3]).replace(" – Ultra High", "") for r in R if len(r) > 6 and r[6] == code and r[2] == "shoot"]
     f.cell(row=row, column=1, value=code); f.cell(row=row, column=2, value=name); f.cell(row=row, column=3, value=", ".join(shots))
-    f.cell(row=row, column=4, value=f'=SUMIF({RNG("J")},A{row},{RNG("D")})')
-    f.cell(row=row, column=5, value=f'=SUMIF({RNG("J")},A{row},{RNG("C")})')
+    f.cell(row=row, column=4, value=f'=SUMIF({RNG("K")},A{row},{RNG("D")})')
+    f.cell(row=row, column=5, value=f'=SUMIF({RNG("K")},A{row},{RNG("C")})')
     f.cell(row=row, column=6, value=f"=E{row}-D{row}").number_format = '+0;-0;0'
     for col in range(1, 7):
         f.cell(row=row, column=col).border = BOX
