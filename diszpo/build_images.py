@@ -3,6 +3,7 @@
 #   vilko/full/<id>.jpg       eredeti világítási tervek (3668×2280)
 #   vilko/t/<id>.jpg          előnézet a kártyákhoz
 #   storyboard/full/<id>.jpg  eredeti storyboard-rajzok
+#   storyboard/t/<id>.jpg     előnézet a kártyákhoz és az időrendhez
 import glob, os, shutil, subprocess, tempfile, unicodedata
 from PIL import Image
 
@@ -37,6 +38,10 @@ os.makedirs(os.path.join(HERE, "vilko", "t"), exist_ok=True)
 for n in VILKO:
     im = Image.open(os.path.join(HERE, "vilko", "full", n + ".jpg")).convert("RGB")
     im.thumbnail((720, 720)); im.save(os.path.join(HERE, "vilko", "t", n + ".jpg"), quality=74, optimize=True, progressive=True)
-for d in ("vilko/full", "vilko/t", "storyboard/full"):
+os.makedirs(os.path.join(HERE, "storyboard", "t"), exist_ok=True)
+for n in BOARD:
+    im = Image.open(os.path.join(HERE, "storyboard", "full", n + ".jpg")).convert("RGB")
+    im.thumbnail((480, 480)); im.save(os.path.join(HERE, "storyboard", "t", n + ".jpg"), quality=78, optimize=True, progressive=True)
+for d in ("vilko/full", "vilko/t", "storyboard/full", "storyboard/t"):
     fs = glob.glob(os.path.join(HERE, d, "*.jpg"))
     print(d, len(fs), "fájl,", round(sum(os.path.getsize(f) for f in fs) / 1e6, 1), "MB,", Image.open(fs[0]).size)

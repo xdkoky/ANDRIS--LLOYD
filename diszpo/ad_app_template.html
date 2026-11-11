@@ -325,6 +325,12 @@ input[type=time],select{height:40px;border-radius:12px;border:1px solid var(--ha
 .vkgrid img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:22% 38%}
 .vkgrid span{position:absolute;left:5px;bottom:5px;font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.74);color:#fff;font-variant-numeric:tabular-nums}
 .imgs .vk img{object-position:22% 38%}
+.vkgrid.sb button{background:#fff}.vkgrid.sb img{object-position:center}
+.sbt{flex:none;padding:0;border:1px solid var(--hair-2);border-radius:9px;overflow:hidden;background:#fff;cursor:zoom-in;display:block;width:50px}
+.sbt img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.sbt.lg{width:92px;border-radius:12px}
+.form-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.tl-sb{float:right;display:flex;gap:4px;margin:1px 0 4px 10px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -575,6 +581,7 @@ function shotImgs(sh){
   if(!sh||(!sh.sb.length&&!sh.vk.length))return"";
   return`<div class="imgs" data-gallery>${sh.sb.map(x=>imgBtn(x,"Storyboard","sb")).join("")}${sh.vk.map(x=>imgBtn(x,"Vilkó","vk")).join("")}</div>`;
 }
+const sbThumb=(x,cls)=>`<button type="button" class="sbt ${cls||""}" data-full="${x.f}" data-thumb="${x.t}" data-cap="Storyboard · ${esc(x.id)}" aria-label="Storyboard ${esc(x.id)} megnyitása"><img src="${x.t}" alt="" loading="lazy"></button>`;
 const propList=ps=>`<ul class="list">${ps.map(p=>`<li class="${/BIZTONSÁG/.test(p)?"warn":""}">${esc(p)}</li>`).join("")}</ul>`;
 function lightHTML(from,to){
   const gf=G(from),gt=G(to);if(!to||!gt)return"";
@@ -645,12 +652,12 @@ function recCard(b){
 }
 function shootDetail(b){
   const sh=D.shots[b.label];if(!sh)return"";
-  const tabs=[["setre","Setre · kellék"],["szkript","Felsnitt"],["kepek","Képek"]];
-  let body;
-  if(detailSeg==="szkript")body=`<div class="script">${sh.segs.map(s=>`<div><span class="seglab">${esc(s.lab)}${s.ids.length&&sh.ids.length>1?" · "+esc(s.ids.join(", ")):""}</span></div>${screenplay(s.lines)}`).join("")||'<p class="muted">Ehhez a shothoz nincs szkript-részlet.</p>'}</div>`;
-  else if(detailSeg==="kepek")body=shotImgs(sh)||'<p class="muted">Ehhez a shothoz nincs storyboard vagy vilkó.</p>';
-  else body=`<div class="sect"><span class="cap">Sztori</span><p>${esc(sh.story)}</p></div><div class="sect"><span class="cap">Kell a setre</span>${people(sh.talent)}${sh.offcam.length?`<p class="muted small">${sh.offcam.map(esc).join(" · ")}</p>`:""}</div><div class="sect"><span class="cap">Kellék · kontinuitás</span>${propList(sh.props)}</div>`;
-  return`<section class="card" id="detailcard"><div class="seg" role="group" aria-label="Részletek">${tabs.map(([k,l])=>`<button type="button" data-seg="${k}" aria-pressed="${detailSeg===k}">${l}</button>`).join("")}</div>${body}</section>`;
+  if(detailSeg!=="szkript")detailSeg="setre";
+  const tabs=[["setre","Setre · kellék"],["szkript","Felsnitt"]];
+  const body=detailSeg==="szkript"
+    ?`<div class="script">${sh.segs.map(s=>`<div><span class="seglab">${esc(s.lab)}${s.ids.length&&sh.ids.length>1?" · "+esc(s.ids.join(", ")):""}</span></div>${screenplay(s.lines)}`).join("")||'<p class="muted">Ehhez a shothoz nincs szkript-részlet.</p>'}</div>`
+    :`<div class="sect"><span class="cap">Sztori</span><p>${esc(sh.story)}</p></div><div class="sect"><span class="cap">Kell a setre</span>${people(sh.talent)}${sh.offcam.length?`<p class="muted small">${sh.offcam.map(esc).join(" · ")}</p>`:""}</div><div class="sect"><span class="cap">Kellék · kontinuitás</span>${propList(sh.props)}</div>`;
+  return`<section class="card" id="detailcard">${shotImgs(sh)}<div class="seg" role="group" aria-label="Részletek">${tabs.map(([k,l])=>`<button type="button" data-seg="${k}" aria-pressed="${detailSeg===k}">${l}</button>`).join("")}</div>${body}</section>`;
 }
 function formationCard(b,P){
   const n=nextShoot(b.i);
@@ -661,7 +668,7 @@ function formationCard(b,P){
   const task=mv&&b.type==="shoot"&&(mv.setup||mv.note)?`<div class="task">${ic("wrench",18)}<div><b>Átállás · ${mv.d}′</b><div class="muted small">${esc([/^(átállás|optikacsere)$/i.test(mv.label)?"":mv.label,mv.setup,mv.note].filter(Boolean).join(" · "))}</div></div></div>`:"";
   const extra=sh?`<div class="sect"><span class="cap">Kellék · kontinuitás</span>${propList(sh.props)}</div>${shotImgs(sh)}<div class="sect"><span class="cap">Sztori</span><p>${esc(sh.story)}</p></div>`:"";
   return`<section class="card" id="formcard"><div class="card-head"><span class="cap">${b.type==="move"?"Ezt kell felvenni":b.type==="lunch"?"Ebéd után":main?"Következő forgatási blokk":"Következő formáció"}</span><span class="chip neutral num">${ic("now",14)}${hm(pn.s)} · ${n.d}′</span></div>
-    <div><div class="form-title">${esc(n.label)}</div>${n.setup?`<p style="font-weight:600;margin-top:4px">${esc(n.setup)}</p>`:""}${n.note?`<p class="muted small" style="margin-top:2px">${esc(n.note)}</p>`:""}</div>
+    <div class="form-head"><div style="min-width:0"><div class="form-title">${esc(n.label)}</div>${n.setup?`<p style="font-weight:600;margin-top:4px">${esc(n.setup)}</p>`:""}${n.note?`<p class="muted small" style="margin-top:2px">${esc(n.note)}</p>`:""}</div>${!main&&sh&&sh.sb.length?sbThumb(sh.sb[0],"lg"):""}</div>
     ${task}${lightHTML(from,n.group)}
     ${sh?`<div class="sect"><span class="cap">${main?"Hívd a setre":"Kell majd a setre"}</span>${people(sh.talent)}${sh.offcam.length?`<p class="muted small">${sh.offcam.map(esc).join(" · ")}</p>`:""}<div id="callnow"></div></div>`:""}
     ${main?extra:(extra?`<details class="more"><summary>${ic("chev",16)}Kellékek, képek, sztori</summary><div class="inner">${extra}</div></details>`:"")}</section>`;
@@ -755,7 +762,7 @@ function renderTimeline(){
     if(p.skip)end="kihagyva";else if(p.done){const dd=(p.e-p.s)-b.d;end=`<span class="drift ${driftCls(dd)}">${Math.abs(dd)>=1?signMin(dd):ic("check",16)}</span>`}
     else if(p.cur)end=`<span class="nowtag">MOST</span>`;else{const dr=p.s-b.s;end=Math.abs(dr)>=1?`<span class="drift ${driftCls(dr)}">${signMin(dr)}</span>`:""}
     return`<div class="tl-row ${cls}" data-type="${b.type}" data-row="${b.i}"><div class="tl-time"><b>${main}</b>${planDiff?`<span>terv ${hm(b.s)}</span>`:""}</div><div class="tl-rail"><i></i></div>
-      <div class="tl-body"><b>${esc(b.label)}</b><div class="sub">${esc(TNAME[b.type])} · ${dEff(b)}′${b.setup?" · "+esc(b.setup):""}</div>
+      <div class="tl-body">${(()=>{const sh=D.shots[b.label];return sh&&sh.sb.length?`<span class="tl-sb" data-gallery>${sh.sb.map(x=>sbThumb(x)).join("")}</span>`:""})()}<b>${esc(b.label)}</b><div class="sub">${esc(TNAME[b.type])} · ${dEff(b)}′${b.setup?" · "+esc(b.setup):""}</div>
       ${open?`${b.note?`<p class="muted small" style="margin-top:8px">${esc(b.note)}</p>`:""}<div class="tl-x">${p.cur?"":`<button class="btn sm solid" type="button" data-jump="${b.i}">${ic("play",14)}Ez megy most</button><button class="btn sm" type="button" data-skip="${b.i}">${ic("skip",14)}${p.skip?"Visszavétel":"Kihagyás"}</button>`}${p.cur?`<a class="btn sm" href="#most">Vissza a Most nézethez</a>`:""}</div>`:""}</div>
       <div class="tl-end">${end}</div></div>`}).join("");
   v.innerHTML=`<div class="vh">Időrend</div><div class="stats"><div class="stat"><span class="cap">Shot</span><b>${shDone}/${shTot}</b></div><div class="stat"><span class="cap">Várható wrap</span><b style="color:var(--${s})">${hm(wrap)}</b></div><div class="stat"><span class="cap">Tervhez</span><b>${signMin(wr-PLAN_WRAP)}</b></div></div>
@@ -819,6 +826,7 @@ function renderInfo(){
       ${confirmReset?`<p style="color:var(--late);font-weight:650">Biztosan nullázod? A lezárt blokkok, take-ek és érkezések törlődnek.</p><div class="field"><button class="btn danger" type="button" id="rsyes">Igen, nullázom</button><button class="btn" type="button" id="rsno">Mégse</button></div>`:`<div class="field"><button class="btn danger" type="button" id="rs">Nap nullázása</button></div>`}</section>
     </div><div class="stack">
     <section class="card"><h2 style="color:var(--late)">Biztonság</h2><ul class="list"><li class="warn">A rúd ráesése (2/6): csak üres vagy könnyített rúddal, mellette biztosító.</li><li>Soma: a 2/2-ben legfeljebb 3 teljes erőkifejtéses take, a próbák könnyített rúddal.</li><li>12K és kábelek: eligazítás reggel.</li></ul></section>
+    ${D.boards&&D.boards.length?`<section class="card"><div class="card-head"><h2>Storyboard</h2><span class="chip neutral num">${D.boards.length} rajz</span></div><div class="vkgrid sb" data-gallery>${D.boards.map(x=>`<button type="button" data-full="${x.f}" data-thumb="${x.t}" data-cap="Storyboard · ${esc(x.id)}"><img src="${x.t}" alt="Storyboard ${esc(x.id)}" loading="lazy"><span>${esc(x.id)}</span></button>`).join("")}</div><p class="muted small">A shotlist rajzai forgatási sorrendben. A 3. jelenethez és a montázshoz nincs rajz.</p></section>`:""}
     ${D.vilko&&D.vilko.length?`<section class="card"><div class="card-head"><h2>Világítási tervek</h2><span class="chip neutral num">${D.vilko.length} db</span></div><div class="vkgrid" data-gallery>${D.vilko.map(x=>`<button type="button" data-full="${x.f}" data-thumb="${x.t}" data-cap="Vilkó · ${esc(x.id)}"><img src="${x.t}" alt="Vilkó ${esc(x.id)}" loading="lazy"><span>${esc(x.id)}</span></button>`).join("")}</div><p class="muted small">Koppints egyre: teljes minőségben nyílik meg, csíptetéssel nagyítható.</p></section>`:""}
     <section class="card"><h2>Fénybeállítások</h2><div class="rows">${Object.entries(D.groups).map(([k,g])=>`<div class="row" style="grid-template-columns:52px minmax(0,1fr);align-items:start"><b style="font-size:18px">${esc(k)}</b><div><b>${esc(g[0])}</b><small>${esc(g[1])}</small></div></div>`).join("")}</div></section>
     ${notes.length?`<section class="card"><h2>Ellenőrizd</h2><ul class="list">${notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></section>`:""}
@@ -876,7 +884,7 @@ const TOUR=[
  {state:"shoot",sel:"#go",title:"Kész: ezt nyomod a legtöbbször",html:"Amikor egy blokk véget ér, nyomd meg a <b>Kész</b> gombot. Az app rögzíti az időt, és elindítja a következő blokkot. A gomb alján mindig látod, mi jön."},
  {state:"shoot",sel:"#dock",title:"Vissza és +5 perc",html:"<b>‹</b>&nbsp; Mellényomtál? Visszalép az előző blokkra. Minden lépés után pár másodpercig egy Visszavonás gomb is megjelenik.<br><b>+5′</b>&nbsp; Több idő kell? Öt percet ad a mostani blokkhoz, a várható wrap azonnal frissül."},
  {state:"shoot",sel:".rec",title:"Take-ek",html:"A piros gomb indítja és megállítja a take stopperét. A take-ek sorban megjelennek alatta, a <b>csillaggal</b> megjelölöd a jót."},
- {state:"shoot",sel:"#detailcard",title:"Minden, ami a shothoz kell",html:"<b>Setre · kellék:</b> kit kell hívni, mi legyen a képben. <b>Felsnitt:</b> a szövegrész, amit most veszünk. <b>Képek:</b> storyboard és világítási terv. Koppintásra teljes minőségben nyílnak meg, csíptetéssel nagyíthatók."},
+ {state:"shoot",sel:"#detailcard",title:"Minden, ami a shothoz kell",html:"Fent a shot <b>storyboard-rajza és világítási terve</b>: koppintásra teljes minőségben nyílnak meg, csíptetéssel nagyíthatók. <b>Setre · kellék:</b> kit kell hívni, mi legyen a képben. <b>Felsnitt:</b> a szövegrész, amit most veszünk."},
  {state:"shoot",sel:"#formcard",title:"Mi jön utána",html:"Már forgatás közben látod a következő beállítást: mennyi idő az átállás, <b>változik-e a fény</b>, és kit kell majd a setre hívni. Így időben szólhatsz a részlegeknek."},
  {state:"move",sel:HERO,title:"Átállás",html:"Átálláskor a kártya azt mutatja, <b>mire álltok át</b>. Alatta ott a fényváltás, a kellékek, a storyboard és a vilkó. Öt perccel a vége előtt az app jelez: <b>Színészeket a setre!</b>"},
  {state:"move",sel:"#tabs",title:"A többi nézet",html:"<b>Időrend:</b> az egész nap; egy sorra koppintva odaugorhatsz vagy kihagyhatod. <b>Szkript:</b> a teljes szöveg, shotonként jelölve. <b>Stáb:</b> érkezések pipálása. <b>Info:</b> próba mód, hang, nullázás."},

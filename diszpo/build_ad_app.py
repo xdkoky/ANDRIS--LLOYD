@@ -163,7 +163,13 @@ for b in blocks:
         for x in shots[b["label"]]["vk"]:
             if x not in vilko_all:
                 vilko_all.append(x)
-DATA = {"vilko": vilko_all, "src": os.path.basename(SRC), "date": "2026-11-12", "info": info, "contacts": contacts,
+boards_all = []
+for b in blocks:
+    if b["type"] == "shoot":
+        for x in shots[b["label"]]["sb"]:
+            if x not in boards_all:
+                boards_all.append(x)
+DATA = {"vilko": vilko_all, "boards": boards_all, "src": os.path.basename(SRC), "date": "2026-11-12", "info": info, "contacts": contacts,
         "plan": {"call": blocks[0]["s"], "targetWrap": tm(ws["B4"].value)},
         "blocks": blocks, "shots": shots, "groups": GROUPS, "cast": cast, "crew": crew, "script": script}
 tpl = open(os.path.join(HERE, "ad_app_template.html"), encoding="utf-8").read()
