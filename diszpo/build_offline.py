@@ -1,13 +1,14 @@
-# Offline (PWA) változat az 1st AD appból.
-# Futtatás (a build_ad_app.py után): python3 diszpo/build_offline.py
-#   -> diszpo/offline/   (index.html, sw.js, manifest.json, ikonok, fonts/, storyboard/, vilko/)
-#   -> diszpo/Kapaszkodni_AD_offline.zip   (ezt kell feltölteni pl. Netlify Drop-ra)
-# A nyilvános tárhely miatt a telefonszámok kimaradnak ebből a változatból.
-import hashlib, json, os, re, shutil, zipfile
+# Offline (PWA) változat az 1st AD appból, GitHub Pages-re.
+# Futtatás (a build_ad_app.py után): python3 diszpo/build_offline.py [--zip]
+#   -> docs/   (index.html, sw.js, manifest.json, ikonok, fonts/, storyboard/, vilko/, .nojekyll)
+#      GitHub: Settings → Pages → Deploy from a branch → ág + /docs
+#   --zip: diszpo/Kapaszkodni_AD_offline.zip is készül (más tárhelyre, pl. Netlify Drop)
+# A tárhely nyilvános, ezért a telefonszámok kimaradnak ebből a változatból.
+import hashlib, json, os, re, shutil, sys, zipfile
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "offline")
+OUT = os.path.normpath(os.path.join(HERE, "..", "docs"))   # a GitHub Pages innen szolgálja ki (branch + /docs)
 os.makedirs(OUT, exist_ok=True)
 
 src = open(os.path.join(HERE, "ad_app.html"), encoding="utf-8").read()
@@ -130,7 +131,7 @@ files = []
 for root, _, fs in os.walk(OUT):
     for f in fs:
         rel = os.path.relpath(os.path.join(root, f), OUT).replace(os.sep, "/")
-        if rel not in ("sw.js", "index.html"):
+        if rel not in ("sw.js", "index.html") and not f.startswith("."):
             files.append(rel)
 files = sorted(files)
 media = [f for f in files if f.startswith(("storyboard/", "vilko/"))]
@@ -164,11 +165,16 @@ self.addEventListener("fetch",e=>{{
 open(os.path.join(OUT, "sw.js"), "w").write(sw)
 files = files + ["index.html"]
 
-# 7) zip
-zp = os.path.join(HERE, "Kapaszkodni_AD_offline.zip")
-with zipfile.ZipFile(zp, "w", zipfile.ZIP_DEFLATED) as z:
-    for root, _, fs in os.walk(OUT):
-        for f in fs:
-            full = os.path.join(root, f)
-            z.write(full, os.path.join("kapaszkodni-ad", os.path.relpath(full, OUT)))
-print("kész:", OUT, "·", len(files), "fájl ·", round(os.path.getsize(zp) / 1e6, 1), "MB zip")
+open(os.path.join(OUT, ".nojekyll"), "w").close()   # a Pages ne futtasson Jekyllt
+
+# 7) zip (csak kérésre)
+size = sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(OUT) for f in fs)
+if "--zip" in sys.argv:
+    zp = os.path.join(HERE, "Kapaszkodni_AD_offline.zip")
+    with zipfile.ZipFile(zp, "w", zipfile.ZIP_DEFLATED) as z:
+        for root, _, fs in os.walk(OUT):
+            for f in fs:
+                full = os.path.join(root, f)
+                z.write(full, os.path.join("kapaszkodni-ad", os.path.relpath(full, OUT)))
+    print("zip:", zp, round(os.path.getsize(zp) / 1e6, 1), "MB")
+print("kész:", OUT, "·", len(files), "fájl ·", round(size / 1e6, 1), "MB")
