@@ -1,0 +1,24 @@
+{
+ "name": "Kapaszkodni 1st AD",
+ "short_name": "Kapaszkodni AD",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#06080b",
+ "theme_color": "#06080b",
+ "lang": "hu",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
