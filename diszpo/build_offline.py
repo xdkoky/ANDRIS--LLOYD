@@ -19,10 +19,25 @@ for c in data["contacts"]:
     c["phone"] = ""
 src = src[:m.start(1)] + json.dumps(data, ensure_ascii=False) + src[m.end(1):]
 
-# 2) betűk helyben, Google Fonts-hivatkozások ki
+# 2) betűk helyben: a sablon Google Fonts hivatkozásából letöltve (latin + latin-ext), a hivatkozások ki
+import subprocess
+FONTS = os.path.join(OUT, "fonts")
+shutil.rmtree(FONTS, ignore_errors=True); os.makedirs(FONTS)
+href = re.search(r'<link rel="stylesheet" href="(https://fonts\.googleapis\.com[^"]+)"', src).group(1).replace("&amp;", "&")
+UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
+gcss = subprocess.check_output(["curl", "-sS", "-A", UA, href]).decode()
+faces = []
+for subset, ff in re.findall(r"/\*\s*([\w-]+)\s*\*/\s*(@font-face\s*{[^}]*})", gcss):
+    if subset not in ("latin", "latin-ext"):
+        continue
+    url = re.search(r"url\((https://[^)]+)\)", ff).group(1)
+    fn = re.sub(r"[^A-Za-z0-9]+", "-", url.split("/s/")[1].rsplit(".", 1)[0])[-60:] + ".woff2"
+    if not os.path.exists(os.path.join(FONTS, fn)):
+        subprocess.run(["curl", "-sS", "-o", os.path.join(FONTS, fn), url], check=True)
+    faces.append(ff.replace(url, "fonts/" + fn))
+fonts_css = "\n".join(faces)
 src = re.sub(r'<link rel="preconnect"[^>]*>\n?', "", src)
 src = re.sub(r'<link rel="stylesheet" href="https://fonts\.googleapis\.com[^>]*>\n?', "", src)
-fonts_css = open(os.path.join(OUT, "fonts", "fonts.css"), encoding="utf-8").read()
 src = src.replace("<style>", "<style>\n" + fonts_css + "\n", 1)
 src = re.sub(r'<meta name="claude:viewport-fit-sides"[^>]*>\n?', "", src)
 
@@ -34,7 +49,7 @@ head = f"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{title}</title>
-<meta name="theme-color" content="#06080b">
+<meta name="theme-color" content="#07090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -64,14 +79,14 @@ for d in ("storyboard", "vilko"):
 
 # 5) ikonok: sötét alap, fénylő gyűrű, K betű
 def icon(size):
-    im = Image.new("RGB", (size, size), (6, 8, 11))
-    glow = Image.new("RGB", (size, size), (6, 8, 11)); g = ImageDraw.Draw(glow)
+    im = Image.new("RGB", (size, size), (7, 9, 13))
+    glow = Image.new("RGB", (size, size), (7, 9, 13)); g = ImageDraw.Draw(glow)
     pad = size * 0.16; w = max(2, int(size * 0.075))
-    g.ellipse([pad, pad, size - pad, size - pad], outline=(71, 224, 197), width=w * 2)
+    g.ellipse([pad, pad, size - pad, size - pad], outline=(53, 216, 232), width=w * 2)
     glow = glow.filter(ImageFilter.GaussianBlur(size * 0.05))
     im = Image.blend(im, glow, 0.9); d = ImageDraw.Draw(im)
-    d.arc([pad, pad, size - pad, size - pad], start=-90, end=200, fill=(71, 224, 197), width=w)
-    d.arc([pad, pad, size - pad, size - pad], start=200, end=270, fill=(255, 75, 103), width=w)
+    d.arc([pad, pad, size - pad, size - pad], start=-90, end=200, fill=(53, 216, 232), width=w)
+    d.arc([pad, pad, size - pad, size - pad], start=200, end=270, fill=(255, 82, 99), width=w)
     f = None
     for fp in (os.path.join(OUT, "fonts", "BarlowCondensed-800-latin.woff2"),
                "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"):
@@ -86,7 +101,7 @@ for s in (180, 192, 512):
     icon(s).save(os.path.join(OUT, f"icon-{s}.png"))
 
 manifest = {"name": "Kapaszkodni 1st AD", "short_name": "Kapaszkodni AD", "start_url": "./", "scope": "./",
-            "display": "standalone", "orientation": "any", "background_color": "#06080b", "theme_color": "#06080b",
+            "display": "standalone", "orientation": "any", "background_color": "#07090d", "theme_color": "#07090d",
             "lang": "hu", "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
                                      {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]}
 open(os.path.join(OUT, "manifest.json"), "w").write(json.dumps(manifest, ensure_ascii=False, indent=1))
@@ -96,7 +111,7 @@ files = []
 for root, _, fs in os.walk(OUT):
     for f in fs:
         rel = os.path.relpath(os.path.join(root, f), OUT).replace(os.sep, "/")
-        if rel in ("sw.js",) or rel.endswith(".css") and rel.startswith("fonts/"):
+        if rel == "sw.js":
             continue
         files.append(rel)
 files = sorted(files)
