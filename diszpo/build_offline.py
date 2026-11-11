@@ -62,20 +62,39 @@ head = f"""<!doctype html>
 """
 tail = """
 <script>
+// Offline: a service worker minden fájlt letölt; a nagy képek a háttérben jönnek, erről jelzést adunk.
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js").then(()=>navigator.serviceWorker.ready).then(()=>{
-    try{if(!localStorage.getItem("kap-offline-ok")){localStorage.setItem("kap-offline-ok","1");toast("Offline használatra kész","var(--ok)")}}catch(e){}
+    let tries=0,told=false;
+    const check=async()=>{
+      try{
+        const name=(await caches.keys()).find(k=>k.startsWith("kap-ad-"));if(!name)return;
+        const have=(await (await caches.open(name)).keys()).length,flag="kap-offline-"+name;
+        if(have>=__TOTAL__){if(!localStorage.getItem(flag)){localStorage.setItem(flag,"1");toast("Minden letöltve: internet nélkül is működik",{tone:"ok",ms:6000})}return}
+        if(!told&&!localStorage.getItem(flag)){told=true;toast("Képek letöltése offline használathoz…",{ms:5000})}
+        if(++tries<60)setTimeout(check,3000);
+      }catch(e){}
+    };
+    setTimeout(check,1500);
   }).catch(()=>{});
 }
 </script>
 </body></html>
 """
-html = head + src + tail
-open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(html)
 
-# 4) képek
+# 4) képek: csak amire az app hivatkozik (előnézet + teljes minőség)
+refs = set()
+for sh in data["shots"].values():
+    for x in sh["sb"] + sh["vk"]:
+        refs.update((x["t"], x["f"]))
+for x in data.get("vilko", []):
+    refs.update((x["t"], x["f"]))
 for d in ("storyboard", "vilko"):
-    shutil.copytree(os.path.join(HERE, d), os.path.join(OUT, d), dirs_exist_ok=True)
+    shutil.rmtree(os.path.join(OUT, d), ignore_errors=True)
+for rel in sorted(refs):
+    dst = os.path.join(OUT, rel)
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    shutil.copy(os.path.join(HERE, rel), dst)
 
 # 5) ikonok: sötét alap, fénylő gyűrű, K betű
 def icon(size):
@@ -106,26 +125,44 @@ manifest = {"name": "Kapaszkodni 1st AD", "short_name": "Kapaszkodni AD", "start
                                      {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]}
 open(os.path.join(OUT, "manifest.json"), "w").write(json.dumps(manifest, ensure_ascii=False, indent=1))
 
-# 6) service worker: minden fájl előre a gyorsítótárba
+# 6) service worker: az alapfájlok kötelezően, a képek egyenként (egy hiba ne akassza meg), futás közben is gyorsítótáraz
 files = []
 for root, _, fs in os.walk(OUT):
     for f in fs:
         rel = os.path.relpath(os.path.join(root, f), OUT).replace(os.sep, "/")
-        if rel == "sw.js":
-            continue
-        files.append(rel)
+        if rel not in ("sw.js", "index.html"):
+            files.append(rel)
 files = sorted(files)
-digest = hashlib.sha1("".join(open(os.path.join(OUT, f), "rb").read().hex()[:2000] + f for f in files).encode()).hexdigest()[:10]
+media = [f for f in files if f.startswith(("storyboard/", "vilko/"))]
+core = [f for f in files if f not in media]
+html = head + src + tail.replace("__TOTAL__", str(len(files) + 1))
+open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(html)
+h = hashlib.sha1(html.encode())
+for f in files:
+    h.update(f.encode()); h.update(str(os.path.getsize(os.path.join(OUT, f))).encode())
+digest = h.hexdigest()[:10]
 sw = f"""const CACHE="kap-ad-{digest}";
-const FILES={json.dumps(["./"] + files)};
-self.addEventListener("install",e=>{{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))}});
+const CORE={json.dumps(["./"] + core)};
+const MEDIA={json.dumps(media)};
+self.addEventListener("install",e=>{{e.waitUntil((async()=>{{
+  const c=await caches.open(CACHE);await c.addAll(CORE);
+  const small=MEDIA.filter(u=>!u.includes("/full/")),big=MEDIA.filter(u=>u.includes("/full/"));
+  await Promise.allSettled(small.map(u=>c.add(u)));
+  for(let i=0;i<big.length;i+=3)await Promise.allSettled(big.slice(i,i+3).map(u=>c.add(u)));
+  await self.skipWaiting();
+}})())}});
 self.addEventListener("activate",e=>{{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))}});
 self.addEventListener("fetch",e=>{{
-  if(e.request.method!=="GET")return;
-  e.respondWith(caches.match(e.request,{{ignoreSearch:true}}).then(r=>r||fetch(e.request).catch(()=>e.request.mode==="navigate"?caches.match("index.html"):undefined)));
+  if(e.request.method!=="GET"||new URL(e.request.url).origin!==location.origin)return;
+  e.respondWith((async()=>{{
+    const hit=await caches.match(e.request,{{ignoreSearch:true}});if(hit)return hit;
+    try{{const r=await fetch(e.request);if(r.ok){{const c=await caches.open(CACHE);c.put(e.request,r.clone())}}return r}}
+    catch(err){{if(e.request.mode==="navigate")return caches.match("./");throw err}}
+  }})());
 }});
 """
 open(os.path.join(OUT, "sw.js"), "w").write(sw)
+files = files + ["index.html"]
 
 # 7) zip
 zp = os.path.join(HERE, "Kapaszkodni_AD_offline.zip")

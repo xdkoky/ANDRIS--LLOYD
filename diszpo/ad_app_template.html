@@ -303,11 +303,28 @@ input[type=time],select{height:40px;border-radius:12px;border:1px solid var(--ha
 .legend div{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--fg-2)}
 .legend i{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:0 0 10px currentColor}
 
-dialog{border:0;padding:0;background:#000;border-radius:16px;max-width:96vw;max-height:90vh;overflow:auto;color:#fff}
-dialog::backdrop{background:rgba(0,0,0,.86)}
-dialog img{display:block;max-width:none;width:min(1800px,190vw)}
-dialog.fit img{width:100%;max-width:96vw}
-.dlgbar{position:sticky;top:0;left:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 8px 8px 14px;background:rgba(14,14,14,.94);font-weight:650;font-size:13px}
+/* képnéző: teljes minőség, csíptetés, húzás, dupla koppintás */
+.viewer{position:fixed;inset:0;z-index:70;background:#000;color:#fff;touch-action:none;user-select:none;-webkit-user-select:none}
+.v-stage{position:absolute;inset:0;overflow:hidden;cursor:grab;touch-action:none}
+.v-stage.drag{cursor:grabbing}
+.v-stage img{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;-webkit-user-drag:none;pointer-events:none;background:#fff}
+.v-top{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:none;
+  padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 26px max(14px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,.78),transparent)}
+.v-top>*{pointer-events:auto}
+.v-cap{min-width:0;font-weight:650;font-size:14px;line-height:1.25}.v-cap span{display:block;font-size:12px;font-weight:550;color:rgba(255,255,255,.62)}
+.v-btn{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(28,30,36,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:grid;place-items:center;color:#fff;padding:0}
+.v-btn:active{transform:scale(.94)} .v-btn:disabled{opacity:.35}
+.v-nav{position:absolute;top:50%;margin-top:-22px}.v-nav.prev{left:max(10px,env(safe-area-inset-left,0px))}.v-nav.next{right:max(10px,env(safe-area-inset-right,0px))}
+.v-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(28,30,36,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.v-bar .v-btn{border:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.v-zoom{min-width:64px;height:44px;border:0;background:none;color:#fff;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;border-radius:999px}
+.v-load{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(78px + env(safe-area-inset-bottom,0px));padding:6px 12px;border-radius:999px;background:rgba(28,30,36,.86);font-size:12.5px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap;pointer-events:none}
+.v-hint{position:absolute;left:50%;transform:translateX(-50%);top:calc(70px + env(safe-area-inset-top,0px));padding:6px 12px;border-radius:999px;background:rgba(28,30,36,.86);font-size:12.5px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap;pointer-events:none;transition:opacity .5s}
+.vkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.vkgrid button{position:relative;padding:0;border:1px solid var(--hair);border-radius:12px;overflow:hidden;background:#000;cursor:zoom-in;display:block}
+.vkgrid img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:22% 38%}
+.vkgrid span{position:absolute;left:5px;bottom:5px;font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.74);color:#fff;font-variant-numeric:tabular-nums}
+.imgs .vk img{object-position:22% 38%}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -342,7 +359,14 @@ dialog.fit img{width:100%;max-width:96vw}
   <div class="p-foot" id="p-foot"></div>
 </div>
 <div class="tour" id="tour" hidden><div class="tour-hole none" id="tourhole"></div><div class="tour-card" id="tourcard" role="dialog" aria-modal="true" aria-labelledby="tourh"></div></div>
-<dialog id="dlg"><div class="dlgbar"><span id="dlgcap"></span><span style="display:flex;gap:6px"><button type="button" class="btn sm" id="dlgfit">Méret</button><button type="button" class="btn sm" id="dlgx">Bezár</button></span></div><img id="dlgimg" alt=""></dialog>
+<div class="viewer" id="viewer" hidden>
+  <div class="v-stage" id="vstage"><img id="vimg" alt="" draggable="false"></div>
+  <div class="v-top"><div class="v-cap"><b id="vcap"></b><span id="vcount"></span></div><button type="button" class="v-btn" id="vclose" aria-label="Bezárás"></button></div>
+  <button type="button" class="v-btn v-nav prev" id="vprev" aria-label="Előző kép"></button><button type="button" class="v-btn v-nav next" id="vnext" aria-label="Következő kép"></button>
+  <div class="v-hint" id="vhint">Csíptess vagy koppints duplán a nagyításhoz</div>
+  <div class="v-load" id="vload" hidden></div>
+  <div class="v-bar"><button type="button" class="v-btn" id="vout" aria-label="Kicsinyítés"></button><button type="button" class="v-zoom" id="vfit" aria-label="Teljes kép"></button><button type="button" class="v-btn" id="vin" aria-label="Nagyítás"></button></div>
+</div>
 
 <script>
 const D=/*__DATA__*/null;
@@ -363,7 +387,7 @@ const IC={
  res:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/>',
  bolt:'<path d="M13 3 5 13h6l-1 8 8-10h-6z"/>',
  chev:'<path d="m9 6 6 6-6 6"/>', left:'<path d="m15 6-6 6 6 6"/>', arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
- x:'<path d="M6 6l12 12M18 6 6 18"/>', check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+ x:'<path d="M6 6l12 12M18 6 6 18"/>', plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>', check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
  star:'<path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/>',
  max:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
  alert:'<path d="M12 4 2.5 20h19zM12 10v4.5M12 17.5h.01"/>',
@@ -475,10 +499,67 @@ function toast(msg,o={}){
 }
 
 /* ---------- képnagyító, kivetítő ---------- */
-function zoom(src,cap,fit){const d=$("#dlg");$("#dlgimg").src=src;$("#dlgcap").textContent=cap;d.classList.toggle("fit",!!fit);d.showModal()}
-$("#dlgx").onclick=()=>$("#dlg").close();$("#dlgfit").onclick=()=>$("#dlg").classList.toggle("fit");
-$("#dlg").addEventListener("click",e=>{if(e.target.id==="dlg")$("#dlg").close()});
-document.addEventListener("click",e=>{const z=e.target.closest("[data-zoom]");if(z)zoom(z.dataset.zoom,z.dataset.cap||"",z.dataset.fit==="1")});
+const V={list:[],i:0,a:1.5,nw:0,z:1,x:0,y:0,ptrs:new Map(),tok:0,tap:null,g:null};
+$("#vclose").innerHTML=ic("x",22);$("#vprev").innerHTML=ic("left",22);$("#vnext").innerHTML=ic("chev",22);$("#vout").innerHTML=ic("minus",22);$("#vin").innerHTML=ic("plus",22);
+const vStage=$("#vstage"),vImg=$("#vimg");
+function vBase(){const sw=vStage.clientWidth,sh=vStage.clientHeight,bw=Math.min(sw,sh*V.a);return{sw,sh,bw,bh:bw/V.a}}
+const vMax=()=>{const{bw}=vBase();return Math.max(4,V.nw?V.nw/bw:8)};
+function vApply(){
+  const{sw,sh,bw,bh}=vBase();V.z=Math.min(vMax(),Math.max(1,V.z));const W=bw*V.z,H=bh*V.z;
+  V.x=W<=sw?(sw-W)/2:Math.min(0,Math.max(sw-W,V.x));V.y=H<=sh?(sh-H)/2:Math.min(0,Math.max(sh-H,V.y));
+  vImg.style.width=W+"px";vImg.style.height=H+"px";vImg.style.transform=`translate3d(${V.x}px,${V.y}px,0)`;
+  $("#vfit").textContent=V.z<1.02?"Teljes":(V.z<10?V.z.toFixed(1):Math.round(V.z))+"×";$("#vout").disabled=V.z<=1.001;$("#vin").disabled=V.z>=vMax()-.001;
+}
+function vZoomAt(cx,cy,nz){nz=Math.min(vMax(),Math.max(1,nz));const k=nz/V.z;V.x=cx-(cx-V.x)*k;V.y=cy-(cy-V.y)*k;V.z=nz;vApply()}
+const vCenter=()=>{const{sw,sh}=vBase();return[sw/2,sh/2]};
+function vLoad(){
+  const it=V.list[V.i],tok=++V.tok,ld=$("#vload");
+  $("#vcap").textContent=it.cap;$("#vcount").textContent=V.list.length>1?`${V.i+1} / ${V.list.length}`:"";
+  $("#vprev").hidden=$("#vnext").hidden=V.list.length<2;
+  V.z=1;V.x=V.y=0;V.nw=0;vImg.style.visibility="hidden";
+  const show=(src,w,h,isFull)=>{if(tok!==V.tok)return;V.a=w/h;if(isFull)V.nw=w;vImg.src=src;vImg.style.visibility="";vApply()};
+  if(it.t&&it.t!==it.f){const th=new Image();th.onload=()=>{if(!V.nw)show(it.t,th.naturalWidth,th.naturalHeight,false)};th.src=it.t}
+  ld.hidden=false;ld.textContent="Teljes minőség betöltése…";
+  const full=new Image();full.decoding="async";
+  full.onload=()=>{if(tok!==V.tok)return;const keep=[V.z,V.x,V.y];show(it.f,full.naturalWidth,full.naturalHeight,true);[V.z,V.x,V.y]=keep;vApply();ld.hidden=true};
+  full.onerror=()=>{if(tok!==V.tok)return;ld.textContent="A teljes minőségű kép most nem érhető el"};
+  full.src=it.f;
+}
+function openViewer(list,i){if(!list.length)return;V.list=list;V.i=Math.max(0,i);$("#viewer").hidden=false;const h=$("#vhint");h.style.opacity="1";setTimeout(()=>{h.style.opacity="0"},2600);vLoad()}
+function closeViewer(){$("#viewer").hidden=true;V.tok++;V.ptrs.clear();vImg.removeAttribute("src")}
+const vStep=d=>{if(V.list.length<2)return;V.i=(V.i+d+V.list.length)%V.list.length;vLoad()};
+$("#vclose").onclick=closeViewer;$("#vprev").onclick=()=>vStep(-1);$("#vnext").onclick=()=>vStep(1);
+$("#vin").onclick=()=>vZoomAt(...vCenter(),V.z*1.6);$("#vout").onclick=()=>vZoomAt(...vCenter(),V.z/1.6);$("#vfit").onclick=()=>{V.z=1;vApply()};
+vStage.addEventListener("pointerdown",e=>{
+  try{vStage.setPointerCapture(e.pointerId)}catch(x){}
+  V.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});vStage.classList.add("drag");
+  if(V.ptrs.size===1)V.g={t:Date.now(),sx:e.clientX,sy:e.clientY,moved:0,multi:false};
+  if(V.ptrs.size===2){const[p,q]=[...V.ptrs.values()];V.g.multi=true;V.pin={d:Math.hypot(p.x-q.x,p.y-q.y)||1,z:V.z,mx:(p.x+q.x)/2,my:(p.y+q.y)/2}}
+});
+vStage.addEventListener("pointermove",e=>{
+  const o=V.ptrs.get(e.pointerId);if(!o)return;const dx=e.clientX-o.x,dy=e.clientY-o.y;o.x=e.clientX;o.y=e.clientY;
+  if(V.ptrs.size>=2&&V.pin){const[p,q]=[...V.ptrs.values()],d=Math.hypot(p.x-q.x,p.y-q.y)||1,mx=(p.x+q.x)/2,my=(p.y+q.y)/2;
+    V.x+=mx-V.pin.mx;V.y+=my-V.pin.my;V.pin.mx=mx;V.pin.my=my;vZoomAt(mx,my,V.pin.z*d/V.pin.d)}
+  else if(V.ptrs.size===1){if(V.g)V.g.moved+=Math.abs(dx)+Math.abs(dy);if(V.z>1.001){V.x+=dx;V.y+=dy;vApply()}}
+});
+function vUp(e){
+  if(!V.ptrs.has(e.pointerId))return;V.ptrs.delete(e.pointerId);
+  if(V.ptrs.size<2)V.pin=null;if(V.ptrs.size)return;vStage.classList.remove("drag");
+  const g=V.g;V.g=null;if(!g||g.multi||e.type==="pointercancel")return;
+  const dx=e.clientX-g.sx,dy=e.clientY-g.sy,dt=Date.now()-g.t;
+  if(g.moved<10&&dt<320){ // koppintás: a második gyors koppintás nagyít vagy visszaáll
+    if(V.tap&&Date.now()-V.tap.t<340&&Math.hypot(e.clientX-V.tap.x,e.clientY-V.tap.y)<40){V.tap=null;if(V.z>1.05){V.z=1;vApply()}else vZoomAt(e.clientX,e.clientY,Math.min(vMax(),3))}
+    else V.tap={t:Date.now(),x:e.clientX,y:e.clientY};return}
+  if(V.z<=1.001&&dt<600){if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.4)vStep(dx<0?1:-1);else if(dy>110&&dy>Math.abs(dx)*1.4)closeViewer()}
+}
+vStage.addEventListener("pointerup",vUp);vStage.addEventListener("pointercancel",vUp);
+vStage.addEventListener("wheel",e=>{e.preventDefault();vZoomAt(e.clientX,e.clientY,V.z*Math.exp(-e.deltaY*(e.ctrlKey?.012:.0022)))},{passive:false});
+$("#viewer").addEventListener("gesturestart",e=>e.preventDefault());
+addEventListener("resize",()=>{if(!$("#viewer").hidden)vApply()});
+addEventListener("keydown",e=>{if($("#viewer").hidden)return;const k=e.key;if(k==="Escape")closeViewer();else if(k==="+"||k==="=")$("#vin").click();else if(k==="-")$("#vout").click();else if(k==="0")$("#vfit").click();else if(k==="ArrowLeft")vStep(-1);else if(k==="ArrowRight")vStep(1)});
+document.addEventListener("click",e=>{const z=e.target.closest("[data-full]");if(!z)return;
+  const group=[...(z.closest("[data-gallery]")||z.parentElement).querySelectorAll("[data-full]")];
+  openViewer(group.map(x=>({f:x.dataset.full,t:x.dataset.thumb,cap:x.dataset.cap||""})),group.indexOf(z))});
 function present(on){const p=$("#present");p.hidden=!on;if(on){tick(true);try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}}
   else{try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}}}
 $("#present").onclick=()=>present(false);
@@ -489,9 +570,10 @@ const G=g=>D.groups[g]||null;
 const groupChip=g=>g&&G(g)?`<span class="chip neutral" title="${esc(G(g)[0])}">${ic("bolt",14)}${esc(g)}<span class="wide"> · ${esc(G(g)[0])}</span></span>`:"";
 function people(names){return`<div class="people">${names.map(n=>{const c=CASTBY[n];return`<div class="person ${n==="Nagyi"?"n":""}"><span class="avatar">${esc(n[0])}</span><span><b>${esc(c?c.name:n)}</b><small>${esc(n)}</small></span></div>`}).join("")}</div>`}
 function screenplay(lines){return lines.map(l=>{const c={ac:"ac",ch:"ch",pa:"pa",dl:"dl",sh:"sh",end:"end"}[l.t];return c?`<div class="${c}">${esc(l.x)}</div>`:""}).join("")}
+const imgBtn=(x,cap,cls)=>`<button type="button" class="${cls}" data-full="${x.f}" data-thumb="${x.t}" data-cap="${esc(cap)} · ${esc(x.id)}"><img src="${x.t}" alt="${esc(cap)} ${esc(x.id)}" loading="lazy"><span>${esc(cap)}${cls==="vk"?" · "+esc(x.id):""}</span></button>`;
 function shotImgs(sh){
-  if(!sh||(!sh.sb.length&&!sh.vk))return"";
-  return`<div class="imgs">${sh.sb.map(s=>`<button type="button" class="sb" data-zoom="${s}" data-cap="Storyboard" data-fit="1"><img src="${s}" alt="Storyboard"><span>Storyboard</span></button>`).join("")}${sh.vk?`<button type="button" data-zoom="${sh.vk}" data-cap="Világítási terv"><img src="${sh.vk}" alt="Világítási terv"><span>Vilkó</span></button>`:""}</div>`;
+  if(!sh||(!sh.sb.length&&!sh.vk.length))return"";
+  return`<div class="imgs" data-gallery>${sh.sb.map(x=>imgBtn(x,"Storyboard","sb")).join("")}${sh.vk.map(x=>imgBtn(x,"Vilkó","vk")).join("")}</div>`;
 }
 const propList=ps=>`<ul class="list">${ps.map(p=>`<li class="${/BIZTONSÁG/.test(p)?"warn":""}">${esc(p)}</li>`).join("")}</ul>`;
 function lightHTML(from,to){
@@ -737,6 +819,7 @@ function renderInfo(){
       ${confirmReset?`<p style="color:var(--late);font-weight:650">Biztosan nullázod? A lezárt blokkok, take-ek és érkezések törlődnek.</p><div class="field"><button class="btn danger" type="button" id="rsyes">Igen, nullázom</button><button class="btn" type="button" id="rsno">Mégse</button></div>`:`<div class="field"><button class="btn danger" type="button" id="rs">Nap nullázása</button></div>`}</section>
     </div><div class="stack">
     <section class="card"><h2 style="color:var(--late)">Biztonság</h2><ul class="list"><li class="warn">A rúd ráesése (2/6): csak üres vagy könnyített rúddal, mellette biztosító.</li><li>Soma: a 2/2-ben legfeljebb 3 teljes erőkifejtéses take, a próbák könnyített rúddal.</li><li>12K és kábelek: eligazítás reggel.</li></ul></section>
+    ${D.vilko&&D.vilko.length?`<section class="card"><div class="card-head"><h2>Világítási tervek</h2><span class="chip neutral num">${D.vilko.length} db</span></div><div class="vkgrid" data-gallery>${D.vilko.map(x=>`<button type="button" data-full="${x.f}" data-thumb="${x.t}" data-cap="Vilkó · ${esc(x.id)}"><img src="${x.t}" alt="Vilkó ${esc(x.id)}" loading="lazy"><span>${esc(x.id)}</span></button>`).join("")}</div><p class="muted small">Koppints egyre: teljes minőségben nyílik meg, csíptetéssel nagyítható.</p></section>`:""}
     <section class="card"><h2>Fénybeállítások</h2><div class="rows">${Object.entries(D.groups).map(([k,g])=>`<div class="row" style="grid-template-columns:52px minmax(0,1fr);align-items:start"><b style="font-size:18px">${esc(k)}</b><div><b>${esc(g[0])}</b><small>${esc(g[1])}</small></div></div>`).join("")}</div></section>
     ${notes.length?`<section class="card"><h2>Ellenőrizd</h2><ul class="list">${notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></section>`:""}
     </div></div>`;
@@ -793,7 +876,7 @@ const TOUR=[
  {state:"shoot",sel:"#go",title:"Kész: ezt nyomod a legtöbbször",html:"Amikor egy blokk véget ér, nyomd meg a <b>Kész</b> gombot. Az app rögzíti az időt, és elindítja a következő blokkot. A gomb alján mindig látod, mi jön."},
  {state:"shoot",sel:"#dock",title:"Vissza és +5 perc",html:"<b>‹</b>&nbsp; Mellényomtál? Visszalép az előző blokkra. Minden lépés után pár másodpercig egy Visszavonás gomb is megjelenik.<br><b>+5′</b>&nbsp; Több idő kell? Öt percet ad a mostani blokkhoz, a várható wrap azonnal frissül."},
  {state:"shoot",sel:".rec",title:"Take-ek",html:"A piros gomb indítja és megállítja a take stopperét. A take-ek sorban megjelennek alatta, a <b>csillaggal</b> megjelölöd a jót."},
- {state:"shoot",sel:"#detailcard",title:"Minden, ami a shothoz kell",html:"<b>Setre · kellék:</b> kit kell hívni, mi legyen a képben. <b>Felsnitt:</b> a szövegrész, amit most veszünk. <b>Képek:</b> storyboard és világítási terv, koppintásra nagyítva."},
+ {state:"shoot",sel:"#detailcard",title:"Minden, ami a shothoz kell",html:"<b>Setre · kellék:</b> kit kell hívni, mi legyen a képben. <b>Felsnitt:</b> a szövegrész, amit most veszünk. <b>Képek:</b> storyboard és világítási terv. Koppintásra teljes minőségben nyílnak meg, csíptetéssel nagyíthatók."},
  {state:"shoot",sel:"#formcard",title:"Mi jön utána",html:"Már forgatás közben látod a következő beállítást: mennyi idő az átállás, <b>változik-e a fény</b>, és kit kell majd a setre hívni. Így időben szólhatsz a részlegeknek."},
  {state:"move",sel:HERO,title:"Átállás",html:"Átálláskor a kártya azt mutatja, <b>mire álltok át</b>. Alatta ott a fényváltás, a kellékek, a storyboard és a vilkó. Öt perccel a vége előtt az app jelez: <b>Színészeket a setre!</b>"},
  {state:"move",sel:"#tabs",title:"A többi nézet",html:"<b>Időrend:</b> az egész nap; egy sorra koppintva odaugorhatsz vagy kihagyhatod. <b>Szkript:</b> a teljes szöveg, shotonként jelölve. <b>Stáb:</b> érkezések pipálása. <b>Info:</b> próba mód, hang, nullázás."},
@@ -809,7 +892,7 @@ function tourState(kind){
   st=s;detailSeg="setre";
 }
 function tourStart(){
-  if(tour)return;present(false);
+  if(tour)return;present(false);closeViewer();
   let canDemo=!st.cur&&!isShootDay();
   tour={i:0,state:null,backup:JSON.stringify(st),canDemo};
   $("#tour").hidden=false;tourShow();

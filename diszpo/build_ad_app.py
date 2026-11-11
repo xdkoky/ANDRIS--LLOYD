@@ -123,8 +123,13 @@ GROUPS = {
     "E": ["Este", "Nagy ablakfények KI. 6 PavoTube, LiteMat 4, Aputure MC Pro, gyakorlati 60W, TV-tartalom. 3/2: csak 3 PavoTube + prakti."],
     "N1 + E": ["Nappali alap + esti előkészítve", "Reggel a nappali esti fénye előre beállítva, közben a konyha nappali fénye."],
 }
-SB = lambda i: f"storyboard/{i.replace('/', '-')}.jpg" if os.path.exists(os.path.join(HERE, "storyboard", i.replace("/", "-") + ".jpg")) else None
-VK = lambda i: f"vilko/{i.replace('/', '-')}.jpg" if os.path.exists(os.path.join(HERE, "vilko", i.replace("/", "-") + ".jpg")) else None
+def img(kind, i):
+    """Előnézet (t) és teljes minőségű (f) kép egy shothoz; a teljes a build_images.py-ból jön."""
+    n = i.replace("/", "-") + ".jpg"
+    ex = lambda *a: os.path.exists(os.path.join(HERE, kind, *a))
+    if not (ex(n) or ex("full", n)):
+        return None
+    return {"id": i, "t": f"{kind}/t/{n}" if ex("t", n) else f"{kind}/{n}", "f": f"{kind}/full/{n}" if ex("full", n) else f"{kind}/{n}"}
 
 def lines(a, b):
     return [{"t": el(i)[0], "x": el(i)[1]} for i in range(a, b + 1)]
@@ -140,7 +145,7 @@ for b in blocks:
     shots[b["label"]] = {
         "ids": ids, "talent": talent, "offcam": [OFFCAM[i] for i in ids if i in OFFCAM],
         "props": [p for i in ids for p in PROPS.get(i, [])], "story": " ".join(STORY[i] for i in ids if i in STORY),
-        "sb": [x for x in (SB(i) for i in ids) if x], "vk": next((x for x in (VK(i) for i in ids) if x), None),
+        "sb": [x for x in (img("storyboard", i) for i in ids) if x], "vk": [x for x in (img("vilko", i) for i in ids) if x],
         "segs": segs, "pos": min((s["a"] for s in segs), default=999),
     }
 
@@ -152,7 +157,13 @@ for a, bb, lab, sh in SEG:
         cover.setdefault(i, []).append({"lab": lab, "ids": sh})
 script = [{"t": el(i)[0], "x": el(i)[1], "cov": cover.get(i, [])} for i in range(len(SCRIPT))]
 
-DATA = {"src": os.path.basename(SRC), "date": "2026-11-12", "info": info, "contacts": contacts,
+vilko_all = []
+for b in blocks:
+    if b["type"] == "shoot":
+        for x in shots[b["label"]]["vk"]:
+            if x not in vilko_all:
+                vilko_all.append(x)
+DATA = {"vilko": vilko_all, "src": os.path.basename(SRC), "date": "2026-11-12", "info": info, "contacts": contacts,
         "plan": {"call": blocks[0]["s"], "targetWrap": tm(ws["B4"].value)},
         "blocks": blocks, "shots": shots, "groups": GROUPS, "cast": cast, "crew": crew, "script": script}
 tpl = open(os.path.join(HERE, "ad_app_template.html"), encoding="utf-8").read()
