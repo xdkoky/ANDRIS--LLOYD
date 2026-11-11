@@ -16,7 +16,7 @@ from PIL import Image as PILImage
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "Kapaszkodni_utemterv_V4.xlsx")
-OUT = os.path.join(HERE, "Kapaszkodni_utemterv_V5.xlsx")
+OUT = os.path.join(HERE, "Kapaszkodni_utemterv_V4_forgatokonyv_lappal.xlsx")   # NEM a V5: azt a stáb szerkesztette
 HTML_OUT = os.path.join(HERE, "forgatokonyv_sorrend.html")
 
 from felsnitt import SCRIPT, FIX, el, SEG, SCENE_OF, GUESS

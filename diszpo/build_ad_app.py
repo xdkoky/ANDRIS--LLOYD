@@ -21,6 +21,11 @@ def tm(v):
 def txt(v):
     return "" if v is None else re.sub(r"\s+", " ", str(v)).strip()
 
+def cell(v):
+    """Szöveg egy cellából; a magában álló gondolatjel (üres jelölés) üres szöveg, a szövegen belüli megmarad."""
+    t = txt(v)
+    return "" if t in ("–", "-", "—") else t
+
 TYPES = {"Előkészület": "prep", "Prezentálás": "pres", "Forgatás": "shoot", "Átállás": "move", "Ebéd": "lunch", "Tartalék": "res"}
 HR = next(r for r in range(1, 60) if txt(ws.cell(r, 1).value) == "Kezdés")
 
@@ -44,7 +49,7 @@ while r <= ws.max_row:
     typ = txt(ws.cell(r, 6).value)
     if typ in TYPES and ws.cell(r, 3).value not in (None, ""):
         blocks.append({"s": tm(ws.cell(r, 1).value), "d": int(ws.cell(r, 3).value), "type": TYPES[typ], "label": label,
-                       "setup": txt(ws.cell(r, 9).value).replace("–", "").strip(), "note": txt(ws.cell(r, 10).value).replace("–", "").strip(),
+                       "setup": cell(ws.cell(r, 9).value), "note": cell(ws.cell(r, 10).value),
                        "group": txt(ws.cell(r, 11).value)})
     r += 1
 
